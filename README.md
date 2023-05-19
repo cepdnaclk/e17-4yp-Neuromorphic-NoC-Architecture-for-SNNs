@@ -25,7 +25,7 @@ This project aims to develop a novel neuromorphic NoC architecture based on RISC
 
 1. [Project Page](https://cepdnaclk.github.io/e17-4yp-Neuromorphic-NoC-Architecture-for-SNNs)
 2. [Github Repo](https://github.com/cepdnaclk/e17-4yp-Neuromorphic-NoC-Architecture-for-SNNs)
-3. [Department of Computer Engineering](http://ce.pdn.ac.lk)
+3. [Department of Computer Engineering](http://www.ce.pdn.ac.lk)
 
 
 <!-- ## Publications
