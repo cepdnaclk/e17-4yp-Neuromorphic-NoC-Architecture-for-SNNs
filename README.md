@@ -1,6 +1,6 @@
 
 [//]: # (Please refer the instructions in below URL for the configurations)
-[//]: # (https://projects.ce.pdn.ac.lk/docs/how-to-add-adfsf-project)
+[//]: # (https://projects.ce.pdn.ac.lk/docs/how-to-add-a-project)
 
 # Neuromorphic Network-on-Chip Architecture for Spiking Neural Networks
 
