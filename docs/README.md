@@ -3,42 +3,43 @@ layout: home
 permalink: index.html
 
 # Please update this with your repository name and title
-repository-name: eYY-4yp-project-template
-title:
+repository-name: e17-4yp-Neuromorphic-NoC-Architecture-for-SNNs
+title: Neuromorphic Network-on-Chip Architecture for Spiking Neural Networks
 ---
 
 [comment]: # "This is the standard layout for the project, but you can clean this and use your own template"
 
-# Project Title
+# Neuromorphic Network-on-Chip Architecture for Spiking Neural Networks
 
 #### Team
 
-- eNumber, Name, [email](mailto:name@email.com)
-- eNumber, Name, [email](mailto:name@email.com)
-- eNumber, Name, [email](mailto:name@email.com)
+- E/17/018, Balasuriya I.S., [email](mailto:e17018@eng.pdn.ac.lk)
+- E/17/154, Karunanayake A.I. , [email](mailto:e17154@eng.pdn.ac.lk)
+- E/17/286, Rathnayaka R.M.T.N.K., [email](mailto:e17286@eng.pdn.ac.lk)
 
 #### Supervisors
 
-- Name, [email](mailto:name@eng.pdn.ac.lk)
-- Name, [email](mailto:name@eng.pdn.ac.lk)
+- Dr. Isuru Nawinne, [email](mailto:isurunawinne@eng.pdn.ac.lk)
+- Dr. Mahanama Wickramasinghe, [email](mailto:mahanamaw@eng.pdn.ac.lk)
+- Prof. Roshan Ragel, [email](mailto:roshanr@eng.pdn.ac.lk)
+- Dr. Isuru Dasanayake, [email](mailto:isurud@ee.pdn.ac.lk)
 
 #### Table of content
 
-1. [Abstract](#abstract)
-2. [Related works](#related-works)
-3. [Methodology](#methodology)
-4. [Experiment Setup and Implementation](#experiment-setup-and-implementation)
-5. [Results and Analysis](#results-and-analysis)
-6. [Conclusion](#conclusion)
-7. [Publications](#publications)
-8. [Links](#links)
+- [Project Title](#project-title)
+      - [Team](#team)
+      - [Supervisors](#supervisors)
+      - [Table of content](#table-of-content)
+  - [Abstract](#abstract)
+  - [Related works](#related-works)
+  - [Methodology](#methodology)
+  - [Experiment Setup and Implementation](#experiment-setup-and-implementation)
+  - [Results and Analysis](#results-and-analysis)
+  - [Conclusion](#conclusion)
+  - [Publications](#publications)
+  - [Links](#links)
 
 ---
-
-DELETE THIS SAMPLE before publishing to GitHub Pages !!!
-This is a sample image, to show how to add images to your page. To learn more options, please refer [this](https://projects.ce.pdn.ac.lk/docs/faq/how-to-add-an-image/)
-![Sample Image](./images/sample.png)
-
 
 ## Abstract
 
@@ -66,8 +67,8 @@ This is a sample image, to show how to add images to your page. To learn more op
 
 [//]: # ( NOTE: EDIT THIS LINKS WITH YOUR REPO DETAILS )
 
-- [Project Repository](https://github.com/cepdnaclk/repository-name)
-- [Project Page](https://cepdnaclk.github.io/repository-name)
+- [Project Repository](https://github.com/cepdnaclk/e17-4yp-Neuromorphic-NoC-Architecture-for-SNNs)
+- [Project Page](https://cepdnaclk.github.io/e17-4yp-Neuromorphic-NoC-Architecture-for-SNNs/)
 - [Department of Computer Engineering](http://www.ce.pdn.ac.lk/)
 - [University of Peradeniya](https://eng.pdn.ac.lk/)
 
