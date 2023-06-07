@@ -27,6 +27,7 @@ module alu (DATA1, DATA2, RESULT, SELECT);
                     INTER_MULHSU,
                     INTER_MULHU,
                     INTER_DIV,
+                    INTER_DIVU,
                     INTER_REM,
                     INTER_REMU,
                     INTER_FWD; // intermediate to hold calculation
@@ -53,8 +54,10 @@ module alu (DATA1, DATA2, RESULT, SELECT);
     assign  INTER_SLTU = ($unsigned(DATA1) < $unsigned(DATA2)) ? 1'b1 : 1'b0; // set less than unsigned
 
     assign  INTER_MUL = DATA1 * DATA2; // multiplication
+    // returns upper 32 bits of signed x signed  
+    assign INTER_MULH = 64'($signed(DATA1) * $signed(DATA2)) >> 32; 
     // returns upper 32 bits of signed x unsigned  
-    assign  INTER_MULHSU = $signed(DATA1) * $signed(DATA2); 
+    assign  INTER_MULHSU = 64'($signed(DATA1) * $unsigned(DATA2)) >> 32; 
     // returns upper 32 bits of unsigned x unsigned  
     assign  INTER_MULHU = $unsigned(DATA1) * $unsigned(DATA2); // multiplication
 
@@ -62,7 +65,8 @@ module alu (DATA1, DATA2, RESULT, SELECT);
     assign  INTER_DIV = $signed(DATA1) / $signed(DATA2);
     assign  INTER_REM = $signed(DATA1) % $signed(DATA2);
 
-    // unsigned remainder
+    // unsigned integer division
+    assign INTER_DIVU = $unsigned(DATA1) / $unsigned(DATA2);
     assign  INTER_REMU = $unsigned(DATA1) % $unsigned(DATA2);
 
 /*
@@ -130,13 +134,15 @@ begin
         6'b001000:
             RESULT = INTER_MUL;
         6'b001001:
-            RESULT = INTER_MUL;
+            RESULT = INTER_MULH;
         6'b001010:
             RESULT = INTER_MULHSU;
         6'b001011:
             RESULT = INTER_MULHU;
         6'b001100:
             RESULT = INTER_DIV;
+        6'b010101:
+            RESULT = INTER_DIVU;
         6'b001101:
             RESULT = INTER_REM;
         6'b001111:
@@ -148,7 +154,8 @@ begin
             RESULT = INTER_SRA;
         6'b011xxx:
             RESULT = INTER_FWD;
-        default: RESULT = 0;
+        default: 
+            RESULT = 0;
     endcase
 end
 
