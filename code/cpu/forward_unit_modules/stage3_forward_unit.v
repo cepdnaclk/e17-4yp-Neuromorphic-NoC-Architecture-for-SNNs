@@ -34,7 +34,7 @@ module stage3_forward_unit(MEM_WRITE, ADDR1, ADDR2, OP1_MUX, OP2_MUX, STAGE_3_AD
             end
 
 
-        // The logic flow for the operand 1
+        // The logic flow for the operand 2
         if(STAGE_3_REGWRITE_EN == 1'b1 && STAGE_3_ADDR == ADDR2)
             begin
                 // forwading the data from stage 3
@@ -55,6 +55,9 @@ module stage3_forward_unit(MEM_WRITE, ADDR1, ADDR2, OP1_MUX, OP2_MUX, STAGE_3_AD
                 // no forwading 
                 OP2_MUX_OUT = 2'b00;
             end
+
+
+        // TODO: Add forwarding stuff for BJ instructions
 
     end
 

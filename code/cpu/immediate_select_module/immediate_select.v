@@ -6,7 +6,37 @@ module immediate_select(INSTRUCTION, SELECT, OUTPUT);
     input [3:0] SELECT;
     output reg [31:0] OUTPUT;
 
-    wire [19:0] TYPE1, TYPE2;
+    wire[31:0]  TYPE_I, TYPE_S,
+                TYPE_B, TYPE_U,
+                TYPE_J;
+
+    // Immediate value encodings for each type
+    assign TYPE_I = {{20{INSTRUCTION[31]}}, INSTRUCTION[31:12]};
+    assign TYPE_S = {{20{INSTRUCTION[31]}}, INSTRUCTION[31:25], INSTRUCTION[11:7]};
+    assign TYPE_B = {{19{INSTRUCTION[31]}}, INSTRUCTION[7], INSTRUCTION[30:25], INSTRUCTION[11:8], 1'b0};
+    assign TYPE_U = {INSTRUCTION[31:12], 12'b0};
+    assign TYPE_J = {{11{INSTRUCTION[31]}}, INSTRUCTION[19:12], INSTRUCTION[20], INSTRUCTION[30:21], 1'b0};
+
+    always @(*) begin
+        case (SELECT[2:0])        // SELECT needs to be only 3 bits
+            3'b000:
+                OUTPUT = TYPE_U;
+
+            3'b001:
+                OUTPUT = TYPE_J;
+
+            3'b010:
+                OUTPUT = TYPE_I;
+
+            3'b011:
+                OUTPUT = TYPE_B;
+
+            3'b100:
+                OUTPUT = TYPE_S;
+        endcase
+    end
+
+/*     wire [19:0] TYPE1, TYPE2;
     wire [11:0] TYPE3, TYPE4, TYPE5;
     wire [4:0] TYPE6;
 
@@ -20,7 +50,7 @@ module immediate_select(INSTRUCTION, SELECT, OUTPUT);
     assign TYPE6 = INSTRUCTION[29:25];
 
 
-// SELECT[3] == 1'b1 used for signed
+// SELECT[3] == 1'b1 used for unsigned
 
 always @(*)begin
     case (SELECT[2:0])
@@ -57,6 +87,6 @@ always @(*)begin
         3'b101:
             OUTPUT = {{27{1'b0}}, TYPE6};
     endcase
-end
+end */
 
 endmodule
