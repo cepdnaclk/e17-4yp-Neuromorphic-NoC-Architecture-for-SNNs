@@ -32,6 +32,11 @@ module alu (DATA1, DATA2, RESULT, SELECT);
                     INTER_REMU,
                     INTER_FWD; // intermediate to hold calculation
 
+    // Intermediate for 64-bit calculations
+    wire    [63:0]  INTER_MULH64,
+                    INTER_MULHU64,
+                    INTER_MULHSU64;
+
     // FLOAT not implemented
 
 
@@ -54,12 +59,15 @@ module alu (DATA1, DATA2, RESULT, SELECT);
     assign  INTER_SLTU = ($unsigned(DATA1) < $unsigned(DATA2)) ? 1'b1 : 1'b0; // set less than unsigned
 
     assign  INTER_MUL = DATA1 * DATA2; // multiplication
-    // returns upper 32 bits of signed x signed  
-    assign INTER_MULH = 64'($signed(DATA1) * $signed(DATA2)) >> 32; 
+    // returns upper 32 bits of signed x signed
+    assign INTER_MULH64 =  $signed(DATA1) * $signed(DATA2);
+    assign INTER_MULH = INTER_MULH64[63:31];
     // returns upper 32 bits of signed x unsigned  
-    assign  INTER_MULHSU = 64'($signed(DATA1) * $unsigned(DATA2)) >> 32; 
+    assign INTER_MULHSU64 = $signed(DATA1) * $unsigned(DATA2);
+    assign INTER_MULHSU = INTER_MULHSU64[63:31];
     // returns upper 32 bits of unsigned x unsigned  
-    assign  INTER_MULHU = $unsigned(DATA1) * $unsigned(DATA2); // multiplication
+    assign INTER_MULHU64 = $unsigned(DATA1) * $unsigned(DATA2);
+    assign  INTER_MULHU = INTER_MULHU64[63:31];
 
     // signed integer division
     assign  INTER_DIV = $signed(DATA1) / $signed(DATA2);
