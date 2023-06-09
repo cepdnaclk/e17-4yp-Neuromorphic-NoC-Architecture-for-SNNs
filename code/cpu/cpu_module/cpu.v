@@ -93,7 +93,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     reg_file myreg (REG_WRITE_DATA,
                     DATA1_S2,
                     DATA2_S2,
-                    PR_REGISTER_WRITE_ADDR_S2,
+                    PR_REGISTER_WRITE_ADDR_S2,      // THIS IS WRONG!!!
                     PR_INSTRUCTION[19:15],
                     PR_INSTRUCTION[24:20],
                     PR_REG_WRITE_EN_S2,

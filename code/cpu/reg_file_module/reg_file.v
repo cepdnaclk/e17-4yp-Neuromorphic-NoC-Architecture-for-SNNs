@@ -8,7 +8,7 @@ module reg_file(IN, OUT1, OUT2, INADDRESS, OUT1ADDRESS, OUT2ADDRESS, WRITE_EN, C
     input   WRITE_EN, CLK, RESET;  //1 bit data inputs
     output  [31:0]  OUT1, OUT2; //32 bit data outputs
 
-    reg     [31:0]  REGISTERS   [31:0]; //32 bit x 32 register reg_file
+    reg     [31:0]  REGISTERS [31:0]; //32 bit x 32 register reg_file
 
     // output 
     // time delays for now
