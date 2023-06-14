@@ -76,7 +76,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     // structure
     wire [31:0] DATA1_S2, DATA2_S2, IMMEDIATE_OUT_S2;
-    wire [3:0] IMMEDIATE_SELECT;
+    wire [2:0] IMMEDIATE_SELECT;
     wire [3:0] BRANCH_SELECT, MEM_READ_S2;
     wire [5:0] ALU_SELECT; 
     wire OPERAND1_SEL, OPERAND2_SEL;
@@ -103,13 +103,15 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     immediate_select myImmediate (PR_INSTRUCTION, IMMEDIATE_SELECT, IMMEDIATE_OUT_S2);
 
+    // TODO: Pass the output control signals through a MUX.
+    // Need to clear the control signals in case we need to add bubbles.
     control_unit myControl (PR_INSTRUCTION,
                             ALU_SELECT,
                             REG_WRITE_EN_S2,
                             MEM_WRITE_S2,
                             MEM_READ_S2,
                             BRANCH_SELECT,
-                            IMMEDIATE_SELECT,
+                            IMMEDIATE_SELECT,   // TODO: Changed this signal from 4-bit to 3-bit. Fix propagation through PRs.
                             OPERAND1_SEL,
                             OPERAND2_SEL,
                             REG_WRITE_SELECT_S2,

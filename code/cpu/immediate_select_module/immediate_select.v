@@ -3,7 +3,7 @@
 module immediate_select(INSTRUCTION, SELECT, OUTPUT);
 
     input [31:0] INSTRUCTION;
-    input [3:0] SELECT;
+    input [2:0] SELECT;
     output reg [31:0] OUTPUT;
 
     wire[31:0]  TYPE_I, TYPE_S,
@@ -18,7 +18,7 @@ module immediate_select(INSTRUCTION, SELECT, OUTPUT);
     assign TYPE_J = {{12{INSTRUCTION[31]}}, INSTRUCTION[19:12], INSTRUCTION[20], INSTRUCTION[30:21], 1'b0};
 
     always @(*) begin
-        case (SELECT[2:0])        // TODO: SELECT needs to be only 3 bits
+        case (SELECT)        // TODO: SELECT needs to be only 3 bits
             3'b000:
                 OUTPUT = TYPE_U;
 

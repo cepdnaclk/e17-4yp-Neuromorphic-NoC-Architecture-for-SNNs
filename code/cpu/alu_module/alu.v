@@ -149,9 +149,9 @@ begin
             RESULT = INTER_MULHU;
         6'b001100:
             RESULT = INTER_DIV;
-        6'b010101:
-            RESULT = INTER_DIVU;
         6'b001101:
+            RESULT = INTER_DIVU;
+        6'b001110:
             RESULT = INTER_REM;
         6'b001111:
             RESULT = INTER_REMU;
