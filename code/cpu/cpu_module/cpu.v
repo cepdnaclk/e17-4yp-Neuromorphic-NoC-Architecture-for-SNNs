@@ -90,13 +90,13 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     // units 
     // TODO : WRITE_DATA, WRITE_ADDR, WRITE_EN
 
-    reg_file myreg (REG_WRITE_DATA,
+    reg_file myreg (REG_WRITE_DATA,         // THIS *MIGHT* BE WRONG...
                     DATA1_S2,
                     DATA2_S2,
                     PR_REGISTER_WRITE_ADDR_S2,      // THIS IS WRONG!!!
                     PR_INSTRUCTION[19:15],
                     PR_INSTRUCTION[24:20],
-                    PR_REG_WRITE_EN_S2,
+                    PR_REG_WRITE_EN_S2,     // THIS *MIGHT* BE WRONG...
                     CLK,
                     RESET);
 // s2 or s4 ? 
@@ -107,6 +107,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
                             ALU_SELECT,
                             REG_WRITE_EN_S2,
                             MEM_WRITE_S2,
+                            MEM_READ_S2,
                             BRANCH_SELECT,
                             IMMEDIATE_SELECT,
                             OPERAND1_SEL,

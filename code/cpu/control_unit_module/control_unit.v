@@ -1,6 +1,6 @@
 `timescale 1ns/100ps
 
-module control_unit(INSTRUCTION, alu_signal, reg_file_write, main_mem_write, 
+module control_unit(INSTRUCTION, alu_signal, reg_file_write, data_mem_write, data_mem_read,
     branch_control, immediate_select, operand_1_select, operand_2_select, 
     reg_write_select,RESET);
 
@@ -11,8 +11,8 @@ module control_unit(INSTRUCTION, alu_signal, reg_file_write, main_mem_write,
     //output control signals
     output wire reg_file_write, operand_1_select, operand_2_select;
     output wire [5:0] alu_signal;
-    output wire [2:0] main_mem_write;
-    output wire [3:0] main_mem_read;
+    output wire [2:0] data_mem_write;
+    output wire [3:0] data_mem_read;
     output wire [3:0] branch_control, immediate_select;
     output wire [1:0] reg_write_select;
 
@@ -38,7 +38,7 @@ module control_unit(INSTRUCTION, alu_signal, reg_file_write, main_mem_write,
     (opcode == 7'b0000011) |    // LOAD
     (opcode == 7'b1100011) ;    // BRANCH
     // Added
-    // 7'b0101111
+    // 7'b0101111       // What are these? (M and F?)
     // 7'b0000001
     // 7'b0111111
 
@@ -70,12 +70,12 @@ module control_unit(INSTRUCTION, alu_signal, reg_file_write, main_mem_write,
         (opcode == 7'b0000000)) ;
 
     // =========================== Main memory write signal generation ===================
-    assign #3 main_mem_write[2] = (opcode == 7'b0100011);
-    assign #3 main_mem_write[1:0] = funct3[1:0];
+    assign #3 data_mem_write[2] = (opcode == 7'b0100011);
+    assign #3 data_mem_write[1:0] = funct3[1:0];
 
     // =========================== Main memory read signal generation ===================
-    assign #3 main_mem_read[3] = (opcode == 7'b0000011);
-    assign #3 main_mem_read[2:0] = funct3;
+    assign #3 data_mem_read[3] = (opcode == 7'b0000011);
+    assign #3 data_mem_read[2:0] = funct3;
 
     // =========================== Branch control signal generation ===================
 
