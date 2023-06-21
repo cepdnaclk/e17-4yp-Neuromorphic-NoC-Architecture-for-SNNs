@@ -4,6 +4,7 @@ module branch_select(DATA1, DATA2, SELECT, MUX_OUT);
     input [31:0] DATA1, DATA2;
     input [3:0] SELECT;
     output reg MUX_OUT;
+    // TODO: Add output signal for flushing in case a branch is not taken
 
     wire BEQ, BNE, BLT, BGE, BLTU, BGEU;
 
@@ -17,7 +18,7 @@ module branch_select(DATA1, DATA2, SELECT, MUX_OUT);
     always@(*)
     begin
         #2 
-        if (SELECT[3])
+        if (SELECT[3])      // SELECT[3] = 1 means the instruction is a branch/jump instruction
         begin
             case(SELECT[2:0])
                 // for JAL and JALR
@@ -45,10 +46,9 @@ module branch_select(DATA1, DATA2, SELECT, MUX_OUT);
                     MUX_OUT = 1'b0;
             endcase
         end
-
         else
         begin
-            #2 MUX_OUT = 1'b0;
+            MUX_OUT = 1'b0;
         end
 
     end

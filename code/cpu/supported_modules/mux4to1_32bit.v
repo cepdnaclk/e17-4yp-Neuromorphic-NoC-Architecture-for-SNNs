@@ -8,7 +8,7 @@ module mux4to1_32bit(INPUT1,INPUT2,INPUT3,INPUT4,RESULT,SELECT);
 
     always @(*)
     begin
-        if(SELECT == 2'b00)
+        if (SELECT == 2'b00)
             RESULT = INPUT1;
         else if (SELECT == 2'b01)
             RESULT = INPUT2;

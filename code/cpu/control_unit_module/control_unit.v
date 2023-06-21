@@ -133,14 +133,13 @@ module control_unit(INSTRUCTION, alu_signal, reg_file_write_enable, data_mem_wri
         (opcode == 7'b1100011);    // BRANCH instructions
         
     // ================================== Register file write mux select signal generation================
-    assign #3 reg_write_select[0] = ~(
-        (opcode == 7'b0000011) |        // WHAT IS THIS???
-        (opcode == 7'b0111111) );       // WHO IS THIS???
-        
-    assign #3 reg_write_select[1] = 
-        (opcode == 7'b0010111) |    // AUIPC
-        (opcode == 7'b1101111) |    // JAL
-        (opcode == 7'b1100111);     // JALR
+    // 00 = PR_PC_S4, 01 = PR_DATA_CACHE_OUT, 10 = PR_ALU_OUT_S4
+    assign #3 reg_write_select =
+        ((opcode == 7'b1101111) | (opcode == 7'b1100111)) ? 2'b00 :   // JAL, JALR
+        (opcode == 7'b0000011) ? 2'b01 :        // LOAD
+        2'b10;      // Everything else
+
+    
 
     // FLOAT ALWAYS BLOCK TO IMPLEMENT
 

@@ -18,7 +18,7 @@ module immediate_select(INSTRUCTION, SELECT, OUTPUT);
     assign TYPE_J = {{12{INSTRUCTION[31]}}, INSTRUCTION[19:12], INSTRUCTION[20], INSTRUCTION[30:21], 1'b0};
 
     always @(*) begin
-        case (SELECT)        // TODO: SELECT needs to be only 3 bits
+        case (SELECT)
             3'b000:
                 OUTPUT = TYPE_U;
 
@@ -33,6 +33,9 @@ module immediate_select(INSTRUCTION, SELECT, OUTPUT);
 
             3'b100:
                 OUTPUT = TYPE_S;
+                
+            default:
+                OUTPUT = 32'b0;
         endcase
     end
 
