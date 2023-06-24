@@ -26,18 +26,14 @@ title: Neuromorphic Network-on-Chip Architecture for Spiking Neural Networks
 
 #### Table of content
 
-- [Project Title](#project-title)
-      - [Team](#team)
-      - [Supervisors](#supervisors)
-      - [Table of content](#table-of-content)
-  - [Abstract](#abstract)
-  - [Related works](#related-works)
-  - [Methodology](#methodology)
-  - [Experiment Setup and Implementation](#experiment-setup-and-implementation)
-  - [Results and Analysis](#results-and-analysis)
-  - [Conclusion](#conclusion)
-  - [Publications](#publications)
-  - [Links](#links)
+1. [Abstract](#abstract)
+2. [Related works](#related-works)
+3. [Methodology](#methodology)
+4. [Experiment Setup and Implementation](#experiment-setup-and-implementation)
+5. [Results and Analysis](#results-and-analysis)
+6. [Conclusion](#conclusion)
+7. [Publications](#publications)
+8. [Links](#links)
 
 ---
 

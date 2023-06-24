@@ -46,9 +46,8 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     //additional registers
     reg [31:0] PC_PLUS_4;
 
-    //units
-    // TODO : ALUOUT and BRANCHSELSECT 
-//    mux2tol_32bit muxjump(PC_PLUS_4, ALU_OUT, PC_NEXT, BRANCH_SELECT_OUT);
+    // Select between PC+4 and branch target calculated by ALU
+    mux2to1_32bit muxjump(PC_PLUS_4, ALU_OUT, PC_NEXT, BRANCH_SELECT_OUT);
 
    // interrupt control unit
    // TODO;
@@ -76,7 +75,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     // structure
     wire [31:0] DATA1_S2, DATA2_S2, IMMEDIATE_OUT_S2;
-    wire [3:0] IMMEDIATE_SELECT;
+    wire [2:0] IMMEDIATE_SELECT;
     wire [3:0] BRANCH_SELECT, MEM_READ_S2;
     wire [5:0] ALU_SELECT; 
     wire OPERAND1_SEL, OPERAND2_SEL;
@@ -93,22 +92,25 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     reg_file myreg (REG_WRITE_DATA,
                     DATA1_S2,
                     DATA2_S2,
-                    PR_REGISTER_WRITE_ADDR_S2,      // THIS IS WRONG!!!
+                    PR_REGISTER_WRITE_ADDR_S4,
                     PR_INSTRUCTION[19:15],
                     PR_INSTRUCTION[24:20],
-                    PR_REG_WRITE_EN_S2,
+                    PR_REG_WRITE_EN_S4,
                     CLK,
                     RESET);
-// s2 or s4 ? 
+    // s2 or s4 ? 
 
     immediate_select myImmediate (PR_INSTRUCTION, IMMEDIATE_SELECT, IMMEDIATE_OUT_S2);
 
+    // TODO: Pass the output control signals through a MUX.
+    // Need to clear the control signals in case we need to add bubbles.
     control_unit myControl (PR_INSTRUCTION,
                             ALU_SELECT,
                             REG_WRITE_EN_S2,
                             MEM_WRITE_S2,
+                            MEM_READ_S2,
                             BRANCH_SELECT,
-                            IMMEDIATE_SELECT,
+                            IMMEDIATE_SELECT,   // TODO: Changed this signal from 4-bit to 3-bit. Fix propagation through PRs.
                             OPERAND1_SEL,
                             OPERAND2_SEL,
                             REG_WRITE_SELECT_S2,
@@ -118,38 +120,38 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     reg [31:0] PR_PC_S3, PR_ALU_OUT_S3, PR_DATA_2_S3;
     reg [4:0] PR_REGISTER_WRITE_ADDR_S3;
-    // for the forwarding unit Stage 4
-    reg [4:0] REG_READ_ADDR2_S3;
+    reg [4:0] REG_READ_ADDR2_S3;    // For the stage 4 forwarding unit 
 
-    //control lines
+    // Control lines
     reg [3:0] PR_MEM_READ_S3;
     reg [2:0] PR_MEM_WRITE_S3;
     reg [1:0] PR_REG_WRITE_SELECT_S3;
     reg PR_REG_WRITE_EN_S3;
 
-    //structure 
-    // additional wires
+    // ALU wires
     wire [31:0] ALU_IN_1, ALU_IN_2;
     wire [31:0] ALU_OUT;
     wire BRANCH_SELECT_OUT; 
 
-    // HAZARDS??
+    // Hazard MUX wires
     wire [31:0] OP1_HAZ_MUX_OUT, OP2_HAZ_MUX_OUT;
     wire [1:0] OP1_HAZ_MUX_SEL, OP2_HAZ_MUX_SEL;
 
+    // Pipeline flushing signal on branch (TODO: Extract this logic out to a separate pipeline flush module)
     assign FLUSH = BRANCH_SELECT_OUT;
-    // NOTE Check the temp  wires somehtings up here
-    mux4to1_32bit operand1_mux_haz(PR_DATA_1_S2, PR_ALU_OUT_S3, REG_WRITE_DATA,REG_WRITE_DATA_S5, OP1_HAZ_MUX_OUT, OP1_HAZ_MUX_SEL);
-    mux4to1_32bit operand2_mux_haz(PR_DATA_2_S2, PR_ALU_OUT_S3, REG_WRITE_DATA,REG_WRITE_DATA_S5, OP2_HAZ_MUX_OUT, OP2_HAZ_MUX_SEL);
 
-    mux2to1_32bit operand1_mux (OP1_HAZ_MUX_OUT, PR_PC_S2, ALU_IN_1, PR_OPERAND1_SEL);
-    mux2to1_32bit operand2_mux (OP2_HAZ_MUX_OUT, PR_IMMEDIATE_SELECT_OUT, ALU_IN_2, PR_OPERAND2_SEL);
+    // NOTE Check the temp  wires something is up here
+    mux4to1_32bit operand1_mux_haz(PR_DATA_1_S2, PR_ALU_OUT_S3, REG_WRITE_DATA, 32'b0, OP1_HAZ_MUX_OUT, OP1_HAZ_MUX_SEL);
+    mux4to1_32bit operand2_mux_haz(PR_DATA_2_S2, PR_ALU_OUT_S3, REG_WRITE_DATA, 32'b0, OP2_HAZ_MUX_OUT, OP2_HAZ_MUX_SEL);
 
-    alu myAlu (ALU_IN_1, ALU_IN_2, ALU_OUT, PR_ALU_SELECT);
+    mux2to1_32bit operand1_mux(OP1_HAZ_MUX_OUT, PR_PC_S2, ALU_IN_1, PR_OPERAND1_SEL);
+    mux2to1_32bit operand2_mux(OP2_HAZ_MUX_OUT, PR_IMMEDIATE_SELECT_OUT, ALU_IN_2, PR_OPERAND2_SEL);
+
+    alu myAlu(ALU_IN_1, ALU_IN_2, ALU_OUT, PR_ALU_SELECT);
     branch_select myBranchSelect(OP1_HAZ_MUX_OUT, OP2_HAZ_MUX_OUT, PR_BRANCH_SELECT_S2, BRANCH_SELECT_OUT);
 
-    // forwading unit in stage 3
-    stage3_forward_unit myStage3Forwarding (
+    // Forwarding unit in stage 3
+    stage3_forward_unit myStage3Forwarding(
         PR_MEM_WRITE_S2[2],
         REG_READ_ADDR1_S2, 
         REG_READ_ADDR2_S2,
@@ -159,30 +161,27 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
         PR_REG_WRITE_EN_S3,
         PR_REGISTER_WRITE_ADDR_S4,
         PR_REG_WRITE_EN_S4,
-        PR_REGISTER_WRITE_ADDR_S5,
-        PR_REG_WRITE_EN_S5,
         OP1_HAZ_MUX_SEL,
         OP2_HAZ_MUX_SEL
     );
 
 //================= STAGE 4 ==========================
-    // data lines
+    // Data lines
     reg [31:0] PR_PC_S4, PR_ALU_OUT_S4, PR_DATA_CACHE_OUT;
     reg [4:0] PR_REGISTER_WRITE_ADDR_S4;
 
-    // control lines
+    // Control lines
     reg [1:0] PR_REG_WRITE_SELECT_S4;
     reg PR_REG_WRITE_EN_S4;
     reg [3:0] PR_MEM_READ_S4;
 
 
-    // structure 
-    // additional wires
+    // Additional wires
     wire [31:0] PC_PLUS_4_2;
     wire HAZ_MUX_SEL;
     wire [31:0] HAZ_MUX_OUT;
 
-    // units
+    // Connections to data memory
     assign DATA_CACHE_DATA = HAZ_MUX_OUT;
     assign DATA_CACHE_ADDR = PR_ALU_OUT_S3;
     assign memWriteEn = PR_MEM_WRITE_S3;
@@ -198,37 +197,21 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     mux2to1_32bit stage4_forward_unit_mux(PR_DATA_2_S3, PR_DATA_CACHE_OUT, HAZ_MUX_OUT, HAZ_MUX_SEL);
 
-//================= STAGE 5 ==========================
-    // EXTRA pipeline registers to handle the fowarding 
-    // data lines
-    reg [31:0] REG_WRITE_DATA_S5;
-    reg [4:0] PR_REGISTER_WRITE_ADDR_S5;
-
-    // control lines
-    reg PR_REG_WRITE_EN_S5;
-
-    // structure
+    //================= STAGE 5 ==========================
     // additional wires
     wire [31:0] REG_WRITE_DATA;
 
-    // unit 
-    mux4to1_32bit regWriteSelMUX (PR_DATA_CACHE_OUT, PR_ALU_OUT_S4, 32'b0, PR_PC_S4, REG_WRITE_DATA, PR_REG_WRITE_SELECT_S4);
+    // MUX to control writeback value to the register file
+    mux4to1_32bit regWriteSelMUX (PR_PC_S4, PR_DATA_CACHE_OUT, PR_ALU_OUT_S4, 32'b0, REG_WRITE_DATA, PR_REG_WRITE_SELECT_S4);
 
-    // connections
 
     // register updating section 
     always @ (posedge CLK) begin
         #1 // change this if required
-        if(!(DATA_CACHE_BUSY_WAIT || INS_CACHE_BUSY_WAIT)) 
+        if (!(DATA_CACHE_BUSY_WAIT || INS_CACHE_BUSY_WAIT)) 
         begin
             if (FLUSH)
             begin
-                // ********************** STAGE 5 Temporary stage for the forwarding unit ************************
-                REG_WRITE_DATA_S5 = REG_WRITE_DATA;
-                PR_REGISTER_WRITE_ADDR_S5 = PR_REGISTER_WRITE_ADDR_S4;
-
-                PR_REG_WRITE_EN_S5 = PR_REG_WRITE_EN_S4;
-
                 #0.001
 
                 // *************************** STAGE 4 *****************************************
@@ -283,13 +266,6 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
             end
             else
             begin
-
-                // ************************ STAGE 5 Temporary Stage for the forwarding unit *************
-                REG_WRITE_DATA_S5 = REG_WRITE_DATA;
-                PR_REGISTER_WRITE_ADDR_S5 = PR_REGISTER_WRITE_ADDR_S4;
-
-                PR_REG_WRITE_EN_S5 = PR_REG_WRITE_EN_S4;
-
                 #0.001
                 // *********************** STAGE 4 *************************************
                 PR_REGISTER_WRITE_ADDR_S4 = PR_REGISTER_WRITE_ADDR_S3;
@@ -342,11 +318,11 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     end
 
 
-    // PC update with clock edge
+    //PC update with clock edge
     always @ (posedge CLK)begin
-        if(RESET == 1'b1)
+        if (RESET == 1'b1)
         begin
-            PC = -4; // reset the pc counter 
+            PC = -4; // reset the pc counter            // WHY -4 ?
             // clearing the pipeline registers
             PR_INSTRUCTION = 32'b0;
             PR_PC_S1 = 32'b0;
@@ -392,7 +368,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
             if(!(DATA_CACHE_BUSY_WAIT || INS_CACHE_BUSY_WAIT))
             begin
                 PC = PC_NEXT; // increment the pc
-                insReadEn = 1'b1; // enable read form the instruction memory
+                insReadEn = 1'b1; // enable read from the instruction memory
             end
         end
     end

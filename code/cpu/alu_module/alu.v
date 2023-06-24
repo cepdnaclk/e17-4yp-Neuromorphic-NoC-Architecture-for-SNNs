@@ -61,13 +61,13 @@ module alu (DATA1, DATA2, RESULT, SELECT);
     assign  INTER_MUL = DATA1 * DATA2; // multiplication
     // returns upper 32 bits of signed x signed
     assign INTER_MULH64 =  $signed(DATA1) * $signed(DATA2);
-    assign INTER_MULH = INTER_MULH64[63:31];
+    assign INTER_MULH = INTER_MULH64[63:32];
     // returns upper 32 bits of signed x unsigned  
     assign INTER_MULHSU64 = $signed(DATA1) * $unsigned(DATA2);
-    assign INTER_MULHSU = INTER_MULHSU64[63:31];
+    assign INTER_MULHSU = INTER_MULHSU64[63:32];
     // returns upper 32 bits of unsigned x unsigned  
     assign INTER_MULHU64 = $unsigned(DATA1) * $unsigned(DATA2);
-    assign  INTER_MULHU = INTER_MULHU64[63:31];
+    assign  INTER_MULHU = INTER_MULHU64[63:32];
 
     // signed integer division
     assign  INTER_DIV = $signed(DATA1) / $signed(DATA2);
@@ -119,7 +119,7 @@ STORE SW SH SB
 
 always @ (*)
 begin
-    case(SELECT)
+    casez (SELECT)
         6'b000000:
             RESULT = INTER_ADD;
         6'b000001:
@@ -149,9 +149,9 @@ begin
             RESULT = INTER_MULHU;
         6'b001100:
             RESULT = INTER_DIV;
-        6'b010101:
-            RESULT = INTER_DIVU;
         6'b001101:
+            RESULT = INTER_DIVU;
+        6'b001110:
             RESULT = INTER_REM;
         6'b001111:
             RESULT = INTER_REMU;
@@ -160,7 +160,7 @@ begin
             RESULT = INTER_SUB;
         6'b010101:
             RESULT = INTER_SRA;
-        6'b011xxx:
+        6'b011???:
             RESULT = INTER_FWD;
         default: 
             RESULT = 0;
