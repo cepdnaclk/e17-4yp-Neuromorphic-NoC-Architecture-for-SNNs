@@ -55,7 +55,7 @@ module alu (DATA1, DATA2, RESULT, SELECT);
     // arithmetic shift right
     assign  INTER_SRA = DATA1 >>> DATA2;
 
-    assign  INTER_SLT = ($signed(DATA1) < $signed(DATA2)) ? 1'b1 : 1'b0 ; //set less than
+    assign  INTER_SLT = ($signed(DATA1) < $signed(DATA2)) ? 1'b1 : 1'b0; //set less than
     assign  INTER_SLTU = ($unsigned(DATA1) < $unsigned(DATA2)) ? 1'b1 : 1'b0; // set less than unsigned
 
     assign  INTER_MUL = DATA1 * DATA2; // multiplication

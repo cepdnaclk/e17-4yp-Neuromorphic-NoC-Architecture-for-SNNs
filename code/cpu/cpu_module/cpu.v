@@ -10,6 +10,7 @@
 `include "../immediate_select_module/immediate_select.v"
 `include "../control_unit_module/control_unit.v"
 `include "../branch_select_module/branch_select.v"
+`include "../hazard_detection_module/hazard_detection_unit.v"
 
 `include "../forward_unit_modules/stage3_forward_unit.v"
 `include "../forward_unit_modules/stage4_forward_unit.v"
@@ -34,7 +35,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     wire FLUSH;
 
-//================= STAGE 1 ==========================
+    //================= STAGE 1 ==========================
 
     //data lines
     reg [31:0] PR_INSTRUCTION, PR_PC_S1;
@@ -49,17 +50,20 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     // Select between PC+4 and branch target calculated by ALU
     mux2to1_32bit muxjump(PC_PLUS_4, ALU_OUT, PC_NEXT, BRANCH_SELECT_OUT);
 
-   // interrupt control unit
-   // TODO;
+    // Do not update PC if load-use hazard is detected
+    mux2to1_32bit muxhazard(PC_NEXT, PC, PC_NEXT_FINAL, LOAD_USE_HAZARD);
+   
+    // interrupt control unit
+    // TODO;
 
-   always @(posedge CLK)
-   begin   
+    always @(posedge CLK)
+    begin   
         PC_PLUS_4 = PC + 4;
-   end 
+    end 
 
-//================= STAGE 2 ==========================
+    //================= STAGE 2 ==========================
     // data lines
-    reg[31:0] PR_PC_S2, PR_DATA_1_S2, PR_DATA_2_S2, PR_IMMEDIATE_SELECT_OUT;
+    reg[31:0] PR_PC_S2, PR_DATA_1_S2, PR_DATA_2_S2, PR_IMMEDIATE_OUT;
     reg[4:0] PR_REGISTER_WRITE_ADDR_S2;
 
     // for the forwarding unit
@@ -72,6 +76,9 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     reg [2:0] PR_MEM_WRITE_S2;
     reg [1:0] PR_REG_WRITE_SELECT_S2;
     reg PR_REG_WRITE_EN_S2;
+
+    // hazard detection
+    wire LOAD_USE_HAZARD;
 
     // structure
     wire [31:0] DATA1_S2, DATA2_S2, IMMEDIATE_OUT_S2;
@@ -98,23 +105,26 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
                     PR_REG_WRITE_EN_S4,
                     CLK,
                     RESET);
-    // s2 or s4 ? 
 
     immediate_select myImmediate (PR_INSTRUCTION, IMMEDIATE_SELECT, IMMEDIATE_OUT_S2);
 
-    // TODO: Pass the output control signals through a MUX.
-    // Need to clear the control signals in case we need to add bubbles.
     control_unit myControl (PR_INSTRUCTION,
                             ALU_SELECT,
                             REG_WRITE_EN_S2,
                             MEM_WRITE_S2,
                             MEM_READ_S2,
                             BRANCH_SELECT,
-                            IMMEDIATE_SELECT,   // TODO: Changed this signal from 4-bit to 3-bit. Fix propagation through PRs.
+                            IMMEDIATE_SELECT,
                             OPERAND1_SEL,
                             OPERAND2_SEL,
                             REG_WRITE_SELECT_S2,
                             RESET);
+
+    hazard_detection_unit myHazardDetectionUnit (PR_INSTRUCTION[19:15],     // rs1
+                                                 PR_INSTRUCTION[24:20],     // rs2
+                                                 PR_REGISTER_WRITE_ADDR_S2,     
+                                                 MEM_READ_S2[3],
+                                                 LOAD_USE_HAZARD);
 
 //================= STAGE 3 ==========================
 
@@ -145,7 +155,7 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
     mux4to1_32bit operand2_mux_haz(PR_DATA_2_S2, PR_ALU_OUT_S3, REG_WRITE_DATA, 32'b0, OP2_HAZ_MUX_OUT, OP2_HAZ_MUX_SEL);
 
     mux2to1_32bit operand1_mux(OP1_HAZ_MUX_OUT, PR_PC_S2, ALU_IN_1, PR_OPERAND1_SEL);
-    mux2to1_32bit operand2_mux(OP2_HAZ_MUX_OUT, PR_IMMEDIATE_SELECT_OUT, ALU_IN_2, PR_OPERAND2_SEL);
+    mux2to1_32bit operand2_mux(OP2_HAZ_MUX_OUT, PR_IMMEDIATE_OUT, ALU_IN_2, PR_OPERAND2_SEL);
 
     alu myAlu(ALU_IN_1, ALU_IN_2, ALU_OUT, PR_ALU_SELECT);
     branch_select myBranchSelect(OP1_HAZ_MUX_OUT, OP2_HAZ_MUX_OUT, PR_BRANCH_SELECT_S2, BRANCH_SELECT_OUT);
@@ -207,9 +217,46 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
 
     // register updating section 
     always @ (posedge CLK) begin
-        #1 // change this if required
-        if (!(DATA_CACHE_BUSY_WAIT || INS_CACHE_BUSY_WAIT)) 
+        if (RESET == 1'b1)
         begin
+            // Reset all pipeline registers
+            PR_INSTRUCTION = 32'b0;
+            PR_PC_S1 = 32'b0;
+
+            PR_PC_S2 = 32'b0;
+            PR_DATA_1_S2 = 32'b0;
+            PR_DATA_2_S2 = 32'b0;
+            PR_IMMEDIATE_OUT = 32'b0;
+
+            PR_REGISTER_WRITE_ADDR_S2 = 5'b0;
+            PR_BRANCH_SELECT_S2 = 4'b0;
+            PR_MEM_READ_S2 = 4'b0;
+            PR_ALU_SELECT = 5'b0;
+            PR_OPERAND1_SEL = 1'b0;
+            PR_OPERAND2_SEL = 1'b0;
+            PR_MEM_WRITE_S2 = 3'b0;
+            PR_REG_WRITE_SELECT_S2 = 2'b0;
+            PR_REG_WRITE_EN_S2 = 1'b0;
+
+            PR_PC_S3 = 32'b0;
+            PR_ALU_OUT_S3 = 32'b0;
+            PR_DATA_2_S3 = 32'b0;
+            PR_REGISTER_WRITE_ADDR_S3 = 5'b0;
+            PR_MEM_READ_S3 = 4'b0;
+            PR_MEM_WRITE_S3 = 3'b0;
+            PR_REG_WRITE_SELECT_S3 = 2'b0;
+            PR_REG_WRITE_EN_S3 = 1'b0;
+
+            PR_PC_S4 = 32'b0;
+            PR_ALU_OUT_S4 = 32'b0;
+            PR_DATA_CACHE_OUT = 32'b0;
+            PR_REGISTER_WRITE_ADDR_S4 = 5'b0;
+            PR_REG_WRITE_SELECT_S4 = 2'b0;
+            PR_REG_WRITE_EN_S4 = 1'b0;
+        end
+        else if (!(DATA_CACHE_BUSY_WAIT || INS_CACHE_BUSY_WAIT)) 
+        begin
+            #1
             if (FLUSH)
             begin
                 #0.001
@@ -244,25 +291,26 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
                 PR_PC_S2 = PR_PC_S1;
                 PR_DATA_1_S2 = DATA1_S2;
                 PR_DATA_2_S2 = DATA2_S2;
-                PR_IMMEDIATE_SELECT_OUT = IMMEDIATE_OUT_S2;
+                PR_IMMEDIATE_OUT = IMMEDIATE_OUT_S2;
                 REG_READ_ADDR1_S2 = PR_INSTRUCTION[19:15];
                 REG_READ_ADDR2_S2 = PR_INSTRUCTION[24:20];
 
-                PR_BRANCH_SELECT_S2 = BRANCH_SELECT;
+                // Pipeline flushes are implemented by letting the instruction go forward
+                // but modifying the control signals so that it does not make any permanent changes
+                PR_BRANCH_SELECT_S2 = 4'b0000;  // Prevent branches/jumps
                 PR_ALU_SELECT = ALU_SELECT;
                 PR_OPERAND1_SEL = OPERAND1_SEL;
                 PR_OPERAND2_SEL = OPERAND2_SEL;
-                PR_MEM_READ_S2 = 4'b0000;
-                PR_MEM_WRITE_S2 = 3'b000;
+                PR_MEM_READ_S2 = 4'b0000;       // Do not read from memory (Prevent reg file modifications)
+                PR_MEM_WRITE_S2 = 3'b000;       // Prevent memory writes
                 PR_REG_WRITE_SELECT_S2 = REG_WRITE_SELECT_S2;
-                PR_REG_WRITE_EN_S2 = 1'b0;
+                PR_REG_WRITE_EN_S2 = 1'b0;      // Prevent reg file writes
 
 
                 // ******************************** STAGE 1 ******************************
                 #0.001
                 PR_INSTRUCTION = 32'b0;
                 PR_PC_S1 = PC; // PC_PLUS_4;
-
             end
             else
             begin
@@ -296,70 +344,51 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
                 PR_PC_S2 = PR_PC_S1;
                 PR_DATA_1_S2 = DATA1_S2;
                 PR_DATA_2_S2 = DATA2_S2;
-                PR_IMMEDIATE_SELECT_OUT = IMMEDIATE_OUT_S2;
+                PR_IMMEDIATE_OUT = IMMEDIATE_OUT_S2;
                 REG_READ_ADDR1_S2 = PR_INSTRUCTION[19:15];
                 REG_READ_ADDR2_S2 = PR_INSTRUCTION[24:20];
 
-                PR_BRANCH_SELECT_S2 = BRANCH_SELECT;
                 PR_ALU_SELECT = ALU_SELECT;
                 PR_OPERAND1_SEL = OPERAND1_SEL;
                 PR_OPERAND2_SEL = OPERAND2_SEL;
-                PR_MEM_READ_S2 = MEM_READ_S2;
-                PR_MEM_WRITE_S2 = MEM_WRITE_S2;
                 PR_REG_WRITE_SELECT_S2 = REG_WRITE_SELECT_S2;
-                PR_REG_WRITE_EN_S2 = REG_WRITE_EN_S2;
+
+                // In case of load-use hazard, let the instruction go 
+                // without committing any permanent changes
+                if (LOAD_USE_HAZARD)
+                begin
+                    PR_BRANCH_SELECT_S2 = 4'b0000;  // Disable branches/jumps
+                    PR_MEM_READ_S2 = 4'b0000;       // Disable writes from memory to reg file
+                    PR_MEM_WRITE_S2 = 3'b000;       // Prevent memory writes
+                    PR_REG_WRITE_EN_S2 = 1'b0;      // Prevent reg file writes
+                end
+                else
+                begin
+                    PR_BRANCH_SELECT_S2 = BRANCH_SELECT;
+                    PR_MEM_READ_S2 = MEM_READ_S2;
+                    PR_MEM_WRITE_S2 = MEM_WRITE_S2;
+                    PR_REG_WRITE_EN_S2 = REG_WRITE_EN_S2;
+                end
 
                 // *************************** STAGE 1 *******************************
                 #0.001
-                PR_INSTRUCTION = INSTRUCTION;
-                PR_PC_S1 = PC; // PC_PLUS_4
+                if (!LOAD_USE_HAZARD)   // Do not update S1 PR if a load-use hazard is detected
+                begin
+                    PR_INSTRUCTION = INSTRUCTION;
+                    PR_PC_S1 = PC; // PC_PLUS_4
+                end
             end
         end
     end
 
 
-    //PC update with clock edge
-    always @ (posedge CLK)begin
+    // PC update with clock edge
+    always @ (posedge CLK)
+    begin
         if (RESET == 1'b1)
         begin
-            PC = -4; // reset the pc counter            // WHY -4 ?
-            // clearing the pipeline registers
-            PR_INSTRUCTION = 32'b0;
-            PR_PC_S1 = 32'b0;
-
-            PR_PC_S2 = 32'b0;
-            PR_DATA_1_S2 = 32'b0;
-            PR_DATA_2_S2 = 32'b0;
-            PR_IMMEDIATE_SELECT_OUT = 32'b0;
-
-            PR_REGISTER_WRITE_ADDR_S2 = 5'b0;
-            PR_BRANCH_SELECT_S2 = 4'b0;
-            PR_MEM_READ_S2 = 4'b0;
-            PR_ALU_SELECT = 5'b0;
-            PR_OPERAND1_SEL = 1'b0;
-            PR_OPERAND2_SEL = 1'b0;
-            PR_MEM_WRITE_S2 = 3'b0;
-            PR_REG_WRITE_SELECT_S2 = 2'b0;
-            PR_REG_WRITE_EN_S2 = 1'b0;
-
-
-            PR_PC_S3 = 32'b0;
-            PR_ALU_OUT_S3 = 32'b0;
-            PR_DATA_2_S3 = 32'b0;
-            PR_REGISTER_WRITE_ADDR_S3 = 5'b0;
-            PR_MEM_READ_S3 = 4'b0;
-            PR_MEM_WRITE_S3 = 3'b0;
-            PR_REG_WRITE_SELECT_S3 = 2'b0;
-            PR_REG_WRITE_EN_S3 = 1'b0;
-
-            PR_PC_S4 = 32'b0;
-            PR_ALU_OUT_S4 = 32'b0;
-            PR_DATA_CACHE_OUT = 32'b0;
-            PR_REGISTER_WRITE_ADDR_S4 = 5'b0;
-            PR_REG_WRITE_SELECT_S4 = 2'b0;
-            PR_REG_WRITE_EN_S4 = 1'b0;
-
-            insReadEn = 1'b0; // disable the read enable signal of the instruction memory
+            PC = -4;            // Reset the pc counter         // WHY -4 ?
+            insReadEn = 1'b0;   // Disable the read enable signal of the instruction memory
         end
         else
         begin
@@ -367,8 +396,8 @@ module cpu(PC, INSTRUCTION, CLK, RESET, memReadEn, memWriteEn, DATA_CACHE_ADDR, 
             #1
             if(!(DATA_CACHE_BUSY_WAIT || INS_CACHE_BUSY_WAIT))
             begin
-                PC = PC_NEXT; // increment the pc
-                insReadEn = 1'b1; // enable read from the instruction memory
+                PC = PC_NEXT_FINAL;       // Increment the pc
+                insReadEn = 1'b1;   // Enable read from the instruction memory
             end
         end
     end

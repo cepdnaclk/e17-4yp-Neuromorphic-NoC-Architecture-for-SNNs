@@ -26,16 +26,16 @@ module reg_file(IN, OUT1, OUT2, INADDRESS, OUT1ADDRESS, OUT2ADDRESS, WRITE_EN, C
         begin
             for (i = 0; i < 32; i = i + 1)
             begin
-                REGISTERS[i] = 0;       // Write zero to all registers
+                REGISTERS[i] <= 0;       // Write zero to all registers
             end
         end
         else
         begin
             // on paper RAND_INPUT assigned to REG[31]
             // and PC to REG[30] for ISR
-            if (WRITE_EN == 1'b1)
+            if (WRITE_EN == 1'b1 && INADDRESS != 0)     // x0 must always be zero
             begin
-                REGISTERS[INADDRESS] = IN;    
+                REGISTERS[INADDRESS] <= IN;    
             end
             //TODO : check for interrupt 
         end
