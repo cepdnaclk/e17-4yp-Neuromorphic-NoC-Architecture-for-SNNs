@@ -97,13 +97,17 @@ def handleInstruction(separatedIns):
             5, separatedIns[2]) + inst_data[separatedIns[0]]['funct3'] + toBin(5, separatedIns[1]) + inst_data[separatedIns[0]]['opcode']
         
     elif(inst_data[separatedIns[0]]['type'] == "I - Type "):
+        if separatedIns[0][1] == "L":
+            # lw rs2:value  immediate  rs1:base
+            Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[3]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
+
         Instruction = toBin(12, separatedIns[3]) + space + toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
         
         
     elif(inst_data[separatedIns[0]]['type'] == "S-Type"):
-        # sw rs2:value, rs1:base,  immediate
-        immediate = toBin(12, separatedIns[3])
-        Instruction = immediate[:7] + space + toBin(5, separatedIns[1]) + space + toBin(5, separatedIns[2])+ space + inst_data[separatedIns[0]]['funct3']+ space + immediate[7:] + space + inst_data[separatedIns[0]]['opcode']
+        # sw rs2:value  immediate  rs1:base
+        immediate = toBin(12, separatedIns[2])
+        Instruction = immediate[:7] + space + toBin(5, separatedIns[1]) + space + toBin(5, separatedIns[3])+ space + inst_data[separatedIns[0]]['funct3']+ space + immediate[7:] + space + inst_data[separatedIns[0]]['opcode']
     
     elif(inst_data[separatedIns[0]]['type'] == "B-Type"):
         # beq rs1, rs2, label
@@ -121,8 +125,13 @@ def handleInstruction(separatedIns):
         Instruction = immediate[0] + space + immediate[10:20]+ space +immediate[9] + space + immediate[1:9] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
         print(immediate, Instruction)
 
-    elif(inst_data[separatedIns[0]]['type'] == "NOP-type"):
-        Instruction = "0"*32
+    # elif(inst_data[separatedIns[0]]['type'] == "NOP-type"):
+    #     Instruction = "0"*32
+    # FLOATING 
+    # LWNET ,SWNET
+    # EBREAK, ECALL , FENCE
+    # call, tail
+
 
     print(separatedIns[0],separatedIns, Instruction, hex(int(Instruction, 2)))
     saveToFile(Instruction)
@@ -145,10 +154,20 @@ def handleInpFile():
 
     # opening the assembly file
     f = open(argList['inp_file'], "r")
+
+    tmp_ins = []
+    for ins in f:
+        ins = pseudo_ins(ins)
+        tmp_ins.extend(ins)
+
+    f.close()
+    print(tmp_ins)
+
+    
     # line count for the instructions
     lineCount = 0
     # loop through the file and handle the instrctions separately
-    for ins in f:
+    for ins in tmp_ins:
         # skipping enpty lines
         if ins.strip() == '':
             continue
@@ -198,21 +217,156 @@ def fillTheFile():
     # # copy the bin file to the verilog folder
     # shutil.copy2(file, )
 
+def pseudo_ins(ins):
+    # convert to isa ins
+    ins = ins.split()
 
-if __name__ == "__main__":
-    # remove all .bin file in the directory
-    for i in os.listdir("../build"):
-        if i.endswith(".bin"):
-            os.remove("../build/" + i)
+    
 
-    #create the instruction disctionary
-    read_csv()
-    # handdle the argments
-    handleArgs()
-    # input file reding sequence
-    handleInpFile()
-    print(labelPosition)
-    # fill the rest of the bin file
-    fillTheFile()
+    if ins[0] == 'nop':
+        ins[0] = 'addi'
+        ins.extend(["x0","x0","0"])
+    if ins[0] == 'li':
+        ins[0] = 'addi'
+        tmp = ins[2]
+        ins[2] = "x0"
+        ins.append(tmp)
+    elif ins[0] == 'mv':
+        ins[0] = 'addi'
+        ins.append("0")
+    elif ins[0] == 'not':
+        ins[0] = 'xori'
+        ins.append("-1")
+    elif ins[0] == 'neg':
+        ins[0] = 'sub'
+        ins.append(ins[2])
+        ins[1] = 'x0'
+    elif ins[0] == 'negw':
+        # w?
+        ins[0] = 'subw'
+        ins.append("-1")
+        ins[2] = "x0"
+    elif ins[0] == 'sext.w':
+        # w?
+        ins[0] = 'addiw'
+        ins.append("0")
+    elif ins[0] == 'seqz':
+        ins[0] = 'sltiu'
+        ins.append("1")
+    elif ins[0] == 'snez':
+        ins[0] = 'sltu'
+        ins.append(ins[2])
+        ins[2] = "x0"
+    elif ins[0] == 'sltz':
+        ins[0] = 'slt'
+        ins.append("x0")
+    elif ins[0] == 'sgtz':
+        ins[0] = 'slt'
+        ins.append(ins[2])
+        ins[2] = "x0"
+
+
+    elif ins[0] == 'beqz':
+        ins[0] = 'beq'
+        ins.append(ins[2])
+        ins[2] = "x0"
+    elif ins[0] == 'bneq':
+        ins[0] = 'bne'
+        ins.append(ins[2])
+        ins[2] = "x0"
+    elif ins[0] == 'blez':
+        ins[0] = 'bge'
+        ins.append(ins[2])
+        ins[2] = ins[1] 
+        ins[1] = "x0"
+    elif ins[0] == 'bgez':
+        ins[0] = 'bge'
+        ins.append(ins[2])
+        ins[2] = "x0"
+    elif ins[0] == 'bltz':
+        ins[0] = 'blt'
+        ins.append(ins[2])
+        ins[2] = "x0"
+    elif ins[0] == 'bgtz':
+        ins[0] = 'blt'
+        ins.append(ins[2])
+        ins[2] = ins[1] 
+        ins[1] = "x0"
+
+    elif ins[0] == 'bgt':
+        ins[0] = 'blt'
+        tmp = ins[1]
+        ins[1] = ins[2]
+        ins[2] = tmp
+    elif ins[0] == 'ble':
+        ins[0] = 'bge'
+        tmp = ins[1]
+        ins[1] = ins[2]
+        ins[2] = tmp
+    elif ins[0] == 'bgtu':
+        ins[0] = 'bltu'
+        tmp = ins[1]
+        ins[1] = ins[2]
+        ins[2] = tmp
+    elif ins[0] == 'bleu':
+        ins[0] = 'bgeu'
+        tmp = ins[1]
+        ins[1] = ins[2]
+        ins[2] = tmp
+
+
+    elif ins[0] == 'j':
+        ins[0] = 'jal'
+        ins.append(ins[1])
+        ins[1] = "x0"
+    elif ins[0] == 'jal':
+        ins.append(ins[1])
+        ins[1] = "x1"
+    elif ins[0] == 'jr':
+        ins[0] = 'jalr'
+        ins.extend(["0",ins[1]])
+        ins[1] = "x0"
+    elif ins[0] == 'jalr':
+        ins.extend(["0",ins[1]])
+        ins[1] = "x1"
+    elif ins[0] == 'ret':
+        ins[0] = 'jalr'
+        ins.extend(["x0","0","x1"])
+
+    # test call and tail 
+    # str cat or num add offset?
+    elif ins[0] == 'call':
+        offset = toBin(32,int(ins[1]))
+        ins = ["auipc","x1",str(offset)[:20] + str(offset)[20]]
+        ins2 = ["jalr","x1",str(offset)[20:],"x1"]
+        return [ins,ins2]
+    elif ins[0] == 'tail':
+        offset = toBin(32,int(ins[1]))
+        ins = ["auipc","x6",str(offset)[:20] + str(offset)[20]]
+        ins2 = ["jalr","x0",str(offset)[20:],"x6"]
+        return [ins,ins2]
+
+#fence
+# EBREAK, ECALL
+
+    ins = ' '.join(ins)
+    print(ins)
+    return [ins] 
+    
+# if __name__ == "__main__":
+#     # remove all .bin file in the directory
+#     for i in os.listdir("../build"):
+#         if i.endswith(".bin"):
+#             os.remove("../build/" + i)
+
+#     #create the instruction disctionary
+#     read_csv()
+#     # handdle the argments
+#     handleArgs()
+#     # input file reding sequence
+#     handleInpFile()
+#     print(labelPosition)
+#     # fill the rest of the bin file
+#     fillTheFile()
 
     
