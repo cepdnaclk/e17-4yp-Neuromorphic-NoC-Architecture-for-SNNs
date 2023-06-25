@@ -5,9 +5,9 @@ Loop:
 add x2, x0, x1
 addi x0, x1, 0
 addi x1, x2, 0
-sw x2, x5(0)
+sw x2, 0(x5)
 nop
 nop
 nop
-lw x6, x5(0)
+lw x6, 0(x5)
 jal x5, Loop
