@@ -1,4 +1,4 @@
-`include "../../../cpu/alu_module/alu.v"
+`include "alu/alu.v"
 `timescale 1ns/100ps
 
 module alu_tb;
@@ -33,6 +33,13 @@ module alu_tb;
                         (SELECT === 6'b010101) ? "SRA" :
                         (SELECT === 6'b011???) ? "FWD" :
                         "???";
+
+    // Dump wavedata to vcd file
+    initial 
+    begin
+        $dumpfile("build/alu/alu_tb.vcd");
+        $dumpvars(0, dut);
+    end
   
     // Test case definitions
     initial 
@@ -175,14 +182,14 @@ module alu_tb;
         run_testcase();
 
         /*** MULHSU ***/
-        DATA1 = 32'h80000000;
-        DATA2 = 32'hffff8000;
+        DATA1 = 32'h80000000;       // -2147483648 (signed)
+        DATA2 = 32'hffff8000;       // 4294934528 (unsigned)
         EXPECTED = 32'h80004000;
         SELECT = 6'b001010;
         run_testcase();
 
-        DATA1 = 32'haaaaaaab;
-        DATA2 = 32'h0002fe7d;
+        DATA1 = 32'haaaaaaab;       // -1431655765 (signed)
+        DATA2 = 32'h0002fe7d;       // 196221 (unsigned)
         EXPECTED = 32'hffff0081;
         SELECT = 6'b001010;
         run_testcase();
@@ -213,9 +220,9 @@ module alu_tb;
         SELECT = 6'b001100;
         run_testcase();
 
-        DATA1 = 32'hFFFFFFFF;
+        DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
-        EXPECTED = 32'hFFFFFFFF;
+        EXPECTED = 32'hffffffff;
         SELECT = 6'b001100;
         run_testcase();
 
@@ -226,9 +233,9 @@ module alu_tb;
         SELECT = 6'b001101;
         run_testcase();
 
-        DATA1 = 32'hFFFFFFFF;
+        DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
-        EXPECTED = 32'hFFFFFFFF;
+        EXPECTED = 32'hffffffff;
         SELECT = 6'b001101;
         run_testcase();
 
@@ -239,7 +246,7 @@ module alu_tb;
         SELECT = 6'b001110;
         run_testcase();
 
-        DATA1 = 32'hFFFFFFFF;
+        DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
         EXPECTED = 32'h00000000;
         SELECT = 6'b001110;
@@ -252,7 +259,7 @@ module alu_tb;
         SELECT = 6'b001111;
         run_testcase();
 
-        DATA1 = 32'hFFFFFFFF;
+        DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
         EXPECTED = 32'h00000000;
         SELECT = 6'b001111;
@@ -265,9 +272,9 @@ module alu_tb;
         SELECT = 6'b010000;
         run_testcase();
 
-        DATA1 = 32'hFFFFFFFF;
+        DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
-        EXPECTED = 32'hFFFFFFFE;
+        EXPECTED = 32'hfffffffE;
         SELECT = 6'b010000;
         run_testcase();
 
@@ -278,9 +285,9 @@ module alu_tb;
         SELECT = 6'b010101;
         run_testcase();
 
-        DATA1 = 32'hFFFFFFFF;
+        DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
-        EXPECTED = 32'hFFFFFFFF;
+        EXPECTED = 32'hffffffff;
         SELECT = 6'b010101;
         run_testcase();
 
@@ -299,24 +306,27 @@ module alu_tb;
         
         // Display test results
         $display("%t - Testbench completed.", $time);
-        $display("%t - \033[1;32m%d out of %d testcase(s) passing.\033[0m", $time, pass_count, testcase_count);
+        $display("%t - \033[1;32m%0d out of %0d testcase(s) passing.\033[0m", $time, pass_count, testcase_count);
     end
     
     // Test case execution
     task run_testcase;
-        begin
+    begin
         #10;  // Allow some time for the ALU to compute the result
         
         // Check the result and update pass/fail counts
-        if (RESULT !== EXPECTED) begin
-            $display("\033[1;31m[FAILED]\033[0m DATA1=%x, DATA2=%x, RESULT=%x, EXPECTED=%x",
+        if (RESULT !== EXPECTED) 
+        begin
+            $display("\t\033[1;31m[FAILED]\033[0m DATA1=%x, DATA2=%x, RESULT=%x, EXPECTED=%x",
                     DATA1, DATA2, RESULT, EXPECTED);
-        end else begin
+        end 
+        else 
+        begin
             pass_count = pass_count + 1;
         end
         
         testcase_count = testcase_count + 1;
-        end
+    end
     endtask
 
 endmodule
