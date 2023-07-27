@@ -1,0 +1,71 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Mon Jul 24 12:39:43 2023
+[*]
+[dumpfile] "/mnt/e/Engineering/Year 4/FYP/remake/build/cpu/cpu_tb.vcd"
+[dumpfile_mtime] "Mon Jul 24 12:35:07 2023"
+[dumpfile_size] 19377
+[savefile] "/mnt/e/Engineering/Year 4/FYP/remake/config/cpu.gtkw"
+[timestart] 4610
+[size] 1908 987
+[pos] -1 -1
+*-13.000000 28890 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] cpu_tb.
+[treeopen] cpu_tb.dut.
+[sst_width] 214
+[signals_width] 544
+[sst_expanded] 1
+[sst_vpaned_height] 288
+@28
+cpu_tb.dut.CLK
+cpu_tb.dut.RESET
+@200
+-IF Stage
+@22
+cpu_tb.dut.PC[31:0]
+cpu_tb.dut.INSTRUCTION[31:0]
+@200
+-ID Stage
+@c00022
+cpu_tb.dut.ID_INSTRUCTION[31:0]
+@28
+(0)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(1)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(2)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(3)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(4)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(5)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(6)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(7)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(8)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(9)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(10)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(11)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(12)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(13)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(14)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(15)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(16)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(17)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(18)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(19)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(20)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(21)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(22)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(23)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(24)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(25)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(26)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(27)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(28)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(29)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(30)cpu_tb.dut.ID_INSTRUCTION[31:0]
+(31)cpu_tb.dut.ID_INSTRUCTION[31:0]
+@1401200
+-group_end
+@200
+-EX Stage
+-MEM Stage
+-WB Stage
+[pattern_trace] 1
+[pattern_trace] 0
