@@ -193,9 +193,9 @@ def toBin(numOfDigits, num):
 # saving data to a .bin file
 def saveToFile(line):
     global inst_count
-    file = "../build/"+ argList['inp_file'].split('.')[0] + '.bin'
+    file = "build/"+ argList['inp_file'].split('.')[0] + '.bin'
     if not (argList['out_file'] == ''):
-        file = "../build/" + argList['out_file']
+        file = "build/" + argList['out_file']
     # saving the new line to the output file
     f = open(file, "a")
     for i in range(3, -1, -1):
@@ -206,9 +206,9 @@ def saveToFile(line):
 # fillig the rest of the file 
 def fillTheFile():
     global FILE_SIZE
-    file = "../build/" + argList['inp_file'].split('.')[0] + '.bin'
+    file = "build/" + argList['inp_file'].split('.')[0] + '.bin'
     if not (argList['out_file'] == ''):
-        file = "../build/" + argList['out_file']
+        file = "build/" + argList['out_file']
 
     f = open(file, "a")
     for i in range(FILE_SIZE - (4*inst_count)):
