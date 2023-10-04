@@ -21,6 +21,9 @@ inst_count = 0
 
 FILE_SIZE = 1024
 
+def abi_convert(Instructions):
+    return -1
+
 def format(numOfDigits, num):
     return str(num).zfill(numOfDigits)[:numOfDigits]
 
@@ -123,7 +126,7 @@ def handleInstruction(separatedIns):
         #jal rd, immediate
         immediate = toBin(21, separatedIns[2])
         Instruction = immediate[0] + space + immediate[10:20]+ space +immediate[9] + space + immediate[1:9] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
-        print(immediate, Instruction)
+        # print(immediate, Instruction)
 
     # elif(inst_data[separatedIns[0]]['type'] == "NOP-type"):
     #     Instruction = "0"*32
@@ -133,7 +136,7 @@ def handleInstruction(separatedIns):
     # call, tail
 
 
-    print(separatedIns[0],separatedIns, Instruction, hex(int(Instruction, 2)))
+    # print(separatedIns[0],separatedIns, Instruction, hex(int(Instruction, 2)))
     saveToFile(Instruction)
 
 # taking the file name if passed as an argument
@@ -161,6 +164,8 @@ def handleInpFile():
         tmp_ins.extend(ins)
 
     f.close()
+    
+    print("temp")
     print(tmp_ins)
 
     
@@ -181,6 +186,7 @@ def handleInpFile():
             lineCount += 1
         # handleInstruction(ins)
 
+    print(Instructions)
     # start the instruction formatting
     formatInstructions(Instructions)
 
@@ -350,7 +356,7 @@ def pseudo_ins(ins):
 # EBREAK, ECALL
 
     ins = ' '.join(ins)
-    print(ins)
+    # print(ins)
     return [ins] 
     
 # if __name__ == "__main__":
