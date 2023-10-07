@@ -34,16 +34,26 @@ def formatInstructions(Instructions):
 
 # format the different types of instructions
 def formatInstruction(ins, index):
+    print(ins)
     # final instruction
     finalIns = []
-    tmp_split = ins.split()
+
+    # tmp_split = ins.split(" ")
+    tmp_split = ins
+
     instruction_name = tmp_split.pop(0)
+    # instruction_name = tmp_split[0]
+
     finalIns.append(instruction_name.upper())
+    print(tmp_split)
+
     # spliting by the ','
     for tmp in tmp_split:
         # splitting by comma
         tmp_split_2 = tmp.split(',')
+
         tmp_split_2 = list(filter(lambda a: a != '', tmp_split_2))
+        print(tmp_split_2)
 
         # segmented list before putting together
         segmented_list = []
@@ -68,6 +78,7 @@ def formatInstruction(ins, index):
 
         finalIns.extend(segmented_list)
 
+    # print(finalIns)
     #print(instruction_name, finalIns)
     handleInstruction(finalIns)
 
@@ -81,10 +92,18 @@ def read_csv():
             opcode = format(7, row[0])
             funct3 = format(3, row[1])
             funct7 = format(7, row[2])
-            inst = row[3]
-            _type = row[4]
+            rs2 = format(5,row[3])
+            inst = row[4]
+            _type = row[5]
             inst_data[inst] = {'opcode': opcode,
-                               'funct3': funct3, 'funct7': funct7, 'type': _type}
+                               'funct3': funct3, 'funct7': funct7, 'rs2':rs2 ,'type': _type}
+
+        # Checked after adding csr , floating (with R4-Type)
+        #  and additional rs2            
+
+        # for i in inst_data:
+        #     print(i,end=" ")
+        #     print(inst_data[i])
 
 # handling the separated instructions
 def handleInstruction(separatedIns):
@@ -95,8 +114,9 @@ def handleInstruction(separatedIns):
     if(inst_data[separatedIns[0]]['type'] == "R-Type"):
         Instruction = inst_data[separatedIns[0]]['funct7'] + toBin(5, separatedIns[3]) + toBin(
             5, separatedIns[2]) + inst_data[separatedIns[0]]['funct3'] + toBin(5, separatedIns[1]) + inst_data[separatedIns[0]]['opcode']
+        # print(Instruction)
         
-    elif(inst_data[separatedIns[0]]['type'] == "I - Type "):
+    elif(inst_data[separatedIns[0]]['type'] == "I-Type "):
         if separatedIns[0][1] == "L":
             # lw rs2:value  immediate  rs1:base
             Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[3]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
@@ -114,7 +134,7 @@ def handleInstruction(separatedIns):
         immediate = toBin(13, separatedIns[3])
         Instruction = immediate[0]+ space + immediate[2:8] + space + toBin(5, separatedIns[2])+ space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['funct3'] + space + immediate[8:12] + space + immediate[1] + space + inst_data[separatedIns[0]]['opcode'] 
     
-    elif(inst_data[separatedIns[0]]['type'] == "U -Type"):
+    elif(inst_data[separatedIns[0]]['type'] == "U-Type"):
         # lui rd, immediate
         immediate = toBin(32, separatedIns[2])
         Instruction = immediate[0:20] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
@@ -124,6 +144,9 @@ def handleInstruction(separatedIns):
         immediate = toBin(21, separatedIns[2])
         Instruction = immediate[0] + space + immediate[10:20]+ space +immediate[9] + space + immediate[1:9] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
         # print(immediate, Instruction)
+    elif(inst_data[separatedIns[0]]['type'] == "R4-Type"):
+        # Floating point adjoint instructions 
+        print("FMADD")
 
     # elif(inst_data[separatedIns[0]]['type'] == "NOP-type"):
     #     Instruction = "0"*32
@@ -143,13 +166,15 @@ def handleArgs():
         if (sys.argv[i].strip() in argKeys):
             argList[argKeys[sys.argv[i]]] = sys.argv[i+1]
 
+    # works as intended 
+    # print(argList)
 
 # opening the assemblyfile and reading through the file
 def handleInpFile():
     global labelPosition
 
     if argList['inp_file'] == '':
-        # print('Input file not found')
+        print('Input file not found')
         sys.exit(1)
 
     # opening the assembly file
@@ -157,17 +182,17 @@ def handleInpFile():
 
     tmp_ins = []
     for ins in f:
-        ins = pseudo_ins(ins)
-        tmp_ins.extend(ins)
+        tmp_ins.append(ins)
+    # print(tmp_ins)
 
     f.close()
-    # print(tmp_ins)
     
     # line count for the instructions
     lineCount = 0
     # loop through the file and handle the instrctions separately
+    # labelPosition holds line numbers
     for ins in tmp_ins:
-        # skipping enpty lines
+        # skipping empty lines
         if ins.strip() == '':
             continue
         # skiping the comments
@@ -176,10 +201,16 @@ def handleInpFile():
         elif ins.strip()[-1] == ':':
             labelPosition[ins.strip()[:(len(ins.strip())-1)]] = lineCount
         else:
-            Instructions.append(ins)
+            Instructions.extend(pseudo_ins(ins))
             lineCount += 1
         # handleInstruction(ins)
 
+        # print(ins,end="")
+        # ins = pseudo_ins(ins)
+        # tmp_ins.extend(ins)
+        # print("") 
+
+    print(Instructions)
     # start the instruction formatting
     formatInstructions(Instructions)
 
@@ -218,18 +249,28 @@ def fillTheFile():
 
 def pseudo_ins(ins):
     # convert to isa ins
+    #n splitting by space and comma  + space
+    delimiters = [", ", " "]
+ 
+    for delimiter in delimiters:
+        ins = " ".join(ins.split(delimiter))
+     
     ins = ins.split()
 
-    
 
+    # first section
     if ins[0] == 'nop':
         ins[0] = 'addi'
         ins.extend(["x0","x0","0"])
-    if ins[0] == 'li':
-        ins[0] = 'addi'
-        tmp = ins[2]
-        ins[2] = "x0"
-        ins.append(tmp)
+    # check here for li should it be addi rd 0 immediate
+    # Done by loading upper 20 bits to x0
+    # add lower 12 bits of 42 to x0
+    elif ins[0] == 'li':
+        offset = toBin(32,int(ins[2]))
+        ins = ["lui",ins[1],str(offset)[:20]]
+        ins2 = ["addi",ins[1],str(offset)[20:]]
+        return [ins,ins2]
+
     elif ins[0] == 'mv':
         ins[0] = 'addi'
         ins.append("0")
@@ -239,12 +280,12 @@ def pseudo_ins(ins):
     elif ins[0] == 'neg':
         ins[0] = 'sub'
         ins.append(ins[2])
-        ins[1] = 'x0'
+        ins[2] = 'x0'
     elif ins[0] == 'negw':
         # w?
         ins[0] = 'subw'
-        ins.append("-1")
-        ins[2] = "x0"
+        ins.append(ins[2])
+        ins[2] = 'x0'
     elif ins[0] == 'sext.w':
         # w?
         ins[0] = 'addiw'
@@ -264,15 +305,36 @@ def pseudo_ins(ins):
         ins.append(ins[2])
         ins[2] = "x0"
 
+    # floating operations
+    elif ins[0] == 'fmv.s':
+        ins[0] = 'fsgnj.s'
+        ins.append(ins[2])
+    elif ins[0] == 'fabs.s':
+        ins[0] = 'fsgnjx.s'
+        ins.append(ins[2])
+    elif ins[0] == 'fneg.s':
+        ins[0] = 'fsgnjn.s'
+        ins.append(ins[2])
+    elif ins[0] == 'fmv.d':
+        ins[0] = 'fsgnj.d'
+        ins.append(ins[2])
+    elif ins[0] == 'fabs.d':
+        ins[0] = 'fsgnjx.d'
+        ins.append(ins[2])
+    elif ins[0] == 'fneg.d':
+        ins[0] = 'fsgnjn.d'
+        ins.append(ins[2])
 
+    # branch
     elif ins[0] == 'beqz':
         ins[0] = 'beq'
         ins.append(ins[2])
         ins[2] = "x0"
-    elif ins[0] == 'bneq':
+    elif ins[0] == 'bnez':
         ins[0] = 'bne'
         ins.append(ins[2])
         ins[2] = "x0"
+
     elif ins[0] == 'blez':
         ins[0] = 'bge'
         ins.append(ins[2])
@@ -313,7 +375,7 @@ def pseudo_ins(ins):
         ins[1] = ins[2]
         ins[2] = tmp
 
-
+    # jump instructions
     elif ins[0] == 'j':
         ins[0] = 'jal'
         ins.append(ins[1])
@@ -321,16 +383,21 @@ def pseudo_ins(ins):
     elif ins[0] == 'jal':
         ins.append(ins[1])
         ins[1] = "x1"
+
     elif ins[0] == 'jr':
         ins[0] = 'jalr'
-        ins.extend(["0",ins[1]])
+        ins.extend(["0("+ins[1]+")"])
         ins[1] = "x0"
     elif ins[0] == 'jalr':
-        ins.extend(["0",ins[1]])
+        ins[0] = 'jalr'
+        ins.extend(["0("+ins[1]+")"])
         ins[1] = "x1"
     elif ins[0] == 'ret':
         ins[0] = 'jalr'
-        ins.extend(["x0","0","x1"])
+        ins.extend(["0(x1)"])
+        ins[1] = "x0"
+
+
 
     # test call and tail 
     # str cat or num add offset?
@@ -344,11 +411,58 @@ def pseudo_ins(ins):
         ins = ["auipc","x6",str(offset)[:20] + str(offset)[20]]
         ins2 = ["jalr","x0",str(offset)[20:],"x6"]
         return [ins,ins2]
+    
+
+    # csr instructions
+    elif ins[0] == 'csrr':
+        ins[0] = 'csrrs'
+        ins.append("x0")
+    elif ins[0] == 'csrw':
+        ins[0] = 'csrrw'
+        ins.append(ins[2])
+        ins[2]=ins[1]
+        ins[1]="x0"
+    elif ins[0] == 'csrs':
+        ins[0] = 'csrrs'
+        ins.append(ins[2])
+        ins[2]=ins[1]
+        ins[1]="x0"
+    elif ins[0] == 'csrc':
+        ins[0] = 'csrrc'
+        ins.append(ins[2])
+        ins[2]=ins[1]
+        ins[1]="x0"
+        
+    # csr immediate 
+    elif ins[0] == 'csrwi':
+        ins[0] = 'csrrwi'
+        ins.append(ins[2])
+        ins[2]=ins[1]
+        ins[1]="x0"
+    elif ins[0] == 'csrsi':
+        ins[0] = 'csrrsi'
+        ins.append(ins[2])
+        ins[2]=ins[1]
+        ins[1]="x0"
+    elif ins[0] == 'csrci':
+        ins[0] = 'csrrci'
+        ins.append(ins[2])
+        ins[2]=ins[1]
+        ins[1]="x0"
+        
+    # else:
+    #     ins = ' '.join(ins)
+    #     return [ins]
+
 
 #fence
 # EBREAK, ECALL
 
-    ins = ' '.join(ins)
+    # ins = ' '.join(ins)
+
+    # ins_tmp = ', '.join(ins[1:])
+    # ins_ret = ins[0]+" "+ins_tmp
+
     # print(ins)
     return [ins] 
     

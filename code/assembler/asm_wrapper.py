@@ -13,6 +13,6 @@ if __name__ == "__main__":
     handleArgs()
     # input file reding sequence
     handleInpFile()
-    print(labelPosition)
+    # print(labelPosition)
     # fill the rest of the bin file
     fillTheFile()
