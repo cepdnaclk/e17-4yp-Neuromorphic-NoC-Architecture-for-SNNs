@@ -123,7 +123,7 @@ def handleInstruction(separatedIns):
         #jal rd, immediate
         immediate = toBin(21, separatedIns[2])
         Instruction = immediate[0] + space + immediate[10:20]+ space +immediate[9] + space + immediate[1:9] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
-        print(immediate, Instruction)
+        # print(immediate, Instruction)
 
     # elif(inst_data[separatedIns[0]]['type'] == "NOP-type"):
     #     Instruction = "0"*32
@@ -133,7 +133,7 @@ def handleInstruction(separatedIns):
     # call, tail
 
 
-    print(separatedIns[0],separatedIns, Instruction, hex(int(Instruction, 2)))
+    # print(separatedIns[0],separatedIns, Instruction, hex(int(Instruction, 2)))
     saveToFile(Instruction)
 
 # taking the file name if passed as an argument
@@ -149,7 +149,7 @@ def handleInpFile():
     global labelPosition
 
     if argList['inp_file'] == '':
-        print('Input file not found')
+        # print('Input file not found')
         sys.exit(1)
 
     # opening the assembly file
@@ -161,8 +161,7 @@ def handleInpFile():
         tmp_ins.extend(ins)
 
     f.close()
-    print(tmp_ins)
-
+    # print(tmp_ins)
     
     # line count for the instructions
     lineCount = 0
@@ -350,7 +349,7 @@ def pseudo_ins(ins):
 # EBREAK, ECALL
 
     ins = ' '.join(ins)
-    print(ins)
+    # print(ins)
     return [ins] 
     
 # if __name__ == "__main__":
