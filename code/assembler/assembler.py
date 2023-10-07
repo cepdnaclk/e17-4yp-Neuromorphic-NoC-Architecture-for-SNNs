@@ -78,7 +78,7 @@ def formatInstruction(ins, index):
 
         finalIns.extend(segmented_list)
 
-    # print(finalIns)
+    print("final:",finalIns)
     #print(instruction_name, finalIns)
     handleInstruction(finalIns)
 
@@ -105,6 +105,7 @@ def read_csv():
         #     print(i,end=" ")
         #     print(inst_data[i])
 
+
 # handling the separated instructions
 def handleInstruction(separatedIns):
     Instruction = None
@@ -114,7 +115,13 @@ def handleInstruction(separatedIns):
     if(inst_data[separatedIns[0]]['type'] == "R-Type"):
         Instruction = inst_data[separatedIns[0]]['funct7'] + toBin(5, separatedIns[3]) + toBin(
             5, separatedIns[2]) + inst_data[separatedIns[0]]['funct3'] + toBin(5, separatedIns[1]) + inst_data[separatedIns[0]]['opcode']
-        # print(Instruction)
+
+
+        # 00000  
+        # FSQRT.S , FCVT.W.S,  FMV.X.W, FCLASS.S, FCVT.S.W, FMV.W.X
+        
+        # 00001
+        # , FCVT.S.WU, , FCVT.WU.S,
         
     elif(inst_data[separatedIns[0]]['type'] == "I-Type "):
         if separatedIns[0][1] == "L":
@@ -122,7 +129,9 @@ def handleInstruction(separatedIns):
             Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[3]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
 
         Instruction = toBin(12, separatedIns[3]) + space + toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
-        
+
+        # csr values with uimm
+        Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
         
     elif(inst_data[separatedIns[0]]['type'] == "S-Type"):
         # sw rs2:value  immediate  rs1:base
@@ -143,18 +152,17 @@ def handleInstruction(separatedIns):
         #jal rd, immediate
         immediate = toBin(21, separatedIns[2])
         Instruction = immediate[0] + space + immediate[10:20]+ space +immediate[9] + space + immediate[1:9] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
-        # print(immediate, Instruction)
+        
     elif(inst_data[separatedIns[0]]['type'] == "R4-Type"):
         # Floating point adjoint instructions 
         print("FMADD")
+        
+        # Only for the floating instructions so funct2 can be hardcoded 
+        
 
-    # elif(inst_data[separatedIns[0]]['type'] == "NOP-type"):
-    #     Instruction = "0"*32
-    # FLOATING 
     # LWNET ,SWNET
     # EBREAK, ECALL , FENCE
     # call, tail
-
 
     # print(separatedIns[0],separatedIns, Instruction, hex(int(Instruction, 2)))
     saveToFile(Instruction)
