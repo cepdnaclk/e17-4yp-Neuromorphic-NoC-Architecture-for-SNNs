@@ -115,6 +115,7 @@ def handleInstruction(separatedIns):
     Instruction = None
     space = '' # used to visualize the space in instruction in debug mode
 
+    print(inst_data[separatedIns[0]])
 
     # handle R-Type instructions
     if(inst_data[separatedIns[0]]['type'] == "R-Type"):
@@ -137,7 +138,8 @@ def handleInstruction(separatedIns):
         
         
     elif(inst_data[separatedIns[0]]['type'] == "I-Type"):
-        
+
+        print(separatedIns) 
         im = ["L","C","F"]
         if separatedIns[0][1] in im:
             # lw rs2:value  immediate  rs1:base
