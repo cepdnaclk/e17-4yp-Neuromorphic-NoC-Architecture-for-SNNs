@@ -62,12 +62,13 @@ def formatInstruction(ins, index):
             tmpItem = item
             # removing letter x 
             item = item.replace('x', '')
+            item = item.replace('f', '')
             # identifyng the sections with brackets
             if '(' and ')' in item:
                 # removing ) from the string
                 item = item.replace(')', '')
                 tmp_split_3 = item.split('(')
-                tmp_split_3.reverse()
+                # tmp_split_3.reverse()
                 segmented_list.extend(tmp_split_3)
             # resolwing the labels into ofsets
             elif item.isalpha():
@@ -111,27 +112,40 @@ def handleInstruction(separatedIns):
     Instruction = None
     space = '' # used to visualize the space in instruction in debug mode
 
+
     # handle R-Type instructions
     if(inst_data[separatedIns[0]]['type'] == "R-Type"):
-        Instruction = inst_data[separatedIns[0]]['funct7'] + toBin(5, separatedIns[3]) + toBin(
-            5, separatedIns[2]) + inst_data[separatedIns[0]]['funct3'] + toBin(5, separatedIns[1]) + inst_data[separatedIns[0]]['opcode']
 
+        fl = ["FCVT.S.WU","FCVT.WU.S","FSQRT.S","FCVT.W.S","FMV.X.W","FCLASS.S","FCVT.S.W","FMV.W.X"]
+        if separatedIns[0] in fl:
+            Instruction = inst_data[separatedIns[0]]['funct7'] + inst_data[separatedIns[0]]['rs2'] + toBin(
+                5, separatedIns[2]) + inst_data[separatedIns[0]]['funct3'] + toBin(5, separatedIns[1]) + inst_data[separatedIns[0]]['opcode']
 
+        else:
+            Instruction = inst_data[separatedIns[0]]['funct7'] + toBin(5, separatedIns[3]) + toBin(
+                5, separatedIns[2]) + inst_data[separatedIns[0]]['funct3'] + toBin(5, separatedIns[1]) + inst_data[separatedIns[0]]['opcode']
+
+        # shamt ??
+
+        # rs2 == 00001
+        # , FCVT.S.WU, , FCVT.WU.S,
         # 00000  
         # FSQRT.S , FCVT.W.S,  FMV.X.W, FCLASS.S, FCVT.S.W, FMV.W.X
         
-        # 00001
-        # , FCVT.S.WU, , FCVT.WU.S,
         
-    elif(inst_data[separatedIns[0]]['type'] == "I-Type "):
-        if separatedIns[0][1] == "L":
+    elif(inst_data[separatedIns[0]]['type'] == "I-Type"):
+        
+        im = ["L","C","F"]
+        if separatedIns[0][1] in im:
             # lw rs2:value  immediate  rs1:base
+            # FLW only floating ponit I-type
             Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[3]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
-
-        Instruction = toBin(12, separatedIns[3]) + space + toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
+        else:
+            Instruction = toBin(12, separatedIns[3]) + space + toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
 
         # csr values with uimm
-        Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
+        # csr{} rd, offset, rs/uimm
+        # Instruction = toBin(12, separatedIns[2]) + space + toBin(5, separatedIns[3]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
         
     elif(inst_data[separatedIns[0]]['type'] == "S-Type"):
         # sw rs2:value  immediate  rs1:base
@@ -155,9 +169,11 @@ def handleInstruction(separatedIns):
         
     elif(inst_data[separatedIns[0]]['type'] == "R4-Type"):
         # Floating point adjoint instructions 
-        print("FMADD")
+        # print("FMADD")
         
         # Only for the floating instructions so funct2 can be hardcoded 
+        Instruction = toBin(5,separatedIns[4]) + space +"00"+space+ toBin(5, separatedIns[3]) + space +toBin(5, separatedIns[2]) + space + inst_data[separatedIns[0]]['funct3'] + space + toBin(5, separatedIns[1]) + space + inst_data[separatedIns[0]]['opcode']
+
         
 
     # LWNET ,SWNET
@@ -230,6 +246,7 @@ def toBin(numOfDigits, num):
 
 # saving data to a .bin file
 def saveToFile(line):
+    print(line)
     global inst_count
     file = "build/"+ argList['inp_file'].split('.')[0] + '.bin'
     if not (argList['out_file'] == ''):
