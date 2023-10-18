@@ -10,15 +10,15 @@ module branch_control_unit_tb;
     reg [3:0] SELECT;
 
     // Outputs
-    wire PROD_PC_MUX_OUT;    // Produced output
-    reg EXP_PC_MUX_OUT;      // Expected output
+    wire PROD_BJ_SIG;    // Produced output
+    reg EXP_BJ_SIG;      // Expected output
 
     // Counters for passing and total testcases
     integer pass_count;
     integer testcase_count;
 
-    // Instantiate the immediate select unit module
-    branch_control_unit dut (DATA1, DATA2, SELECT, PROD_PC_MUX_OUT);
+    // Instantiate the branch control unit module
+    branch_control_unit dut (DATA1, DATA2, SELECT, PROD_BJ_SIG);
 
     // Test case definitions
     initial 
@@ -31,7 +31,7 @@ module branch_control_unit_tb;
         DATA1 = 5;
         DATA2 = 7;
         SELECT = 4'b1010;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("JAL / JALR");
 
@@ -39,7 +39,7 @@ module branch_control_unit_tb;
         DATA1 = 5;
         DATA2 = 7;
         SELECT = 4'b1000;
-        EXP_PC_MUX_OUT = 1'b0;
+        EXP_BJ_SIG = 1'b0;
         #(branch_select_delay)
         run_testcase("BEQ - 0");
 
@@ -47,7 +47,7 @@ module branch_control_unit_tb;
         DATA1 = 214;
         DATA2 = 214;
         SELECT = 4'b1000;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("BEQ - 1");
 
@@ -55,7 +55,7 @@ module branch_control_unit_tb;
         DATA1 = 689;
         DATA2 = 689;
         SELECT = 4'b1001;
-        EXP_PC_MUX_OUT = 1'b0;
+        EXP_BJ_SIG = 1'b0;
         #(branch_select_delay)
         run_testcase("BNE - 0");
 
@@ -63,7 +63,7 @@ module branch_control_unit_tb;
         DATA1 = 43543;
         DATA2 = 6566;
         SELECT = 4'b1001;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("BNE - 1");
 
@@ -71,7 +71,7 @@ module branch_control_unit_tb;
         DATA1 = 32'h00000001;   // 1
         DATA2 = 32'hffffffff;   // -1
         SELECT = 4'b1100;
-        EXP_PC_MUX_OUT = 1'b0;
+        EXP_BJ_SIG = 1'b0;
         #(branch_select_delay)
         run_testcase("BLT - 0");
 
@@ -79,7 +79,7 @@ module branch_control_unit_tb;
         DATA1 = 32'hffffffff;   // -1
         DATA2 = 32'h00000001;   // 1
         SELECT = 4'b1100;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("BLT - 1");
 
@@ -87,7 +87,7 @@ module branch_control_unit_tb;
         DATA1 = 32'hffffffff;   // -1
         DATA2 = 32'h00000001;   // 1
         SELECT = 4'b1101;
-        EXP_PC_MUX_OUT = 1'b0;
+        EXP_BJ_SIG = 1'b0;
         #(branch_select_delay)
         run_testcase("BGE - 0");
 
@@ -95,7 +95,7 @@ module branch_control_unit_tb;
         DATA1 = 32'h00000001;   // 1
         DATA2 = 32'hffffffff;   // -1
         SELECT = 4'b1101;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("BGE - 1");
 
@@ -103,7 +103,7 @@ module branch_control_unit_tb;
         DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
         SELECT = 4'b1110;
-        EXP_PC_MUX_OUT = 1'b0;
+        EXP_BJ_SIG = 1'b0;
         #(branch_select_delay)
         run_testcase("BLTU - 0");
 
@@ -111,7 +111,7 @@ module branch_control_unit_tb;
         DATA1 = 32'h00000001;
         DATA2 = 32'hffffffff;
         SELECT = 4'b1110;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("BLTU - 1");
 
@@ -119,7 +119,7 @@ module branch_control_unit_tb;
         DATA1 = 32'h00000001;
         DATA2 = 32'hffffffff;
         SELECT = 4'b1111;
-        EXP_PC_MUX_OUT = 1'b0;
+        EXP_BJ_SIG = 1'b0;
         #(branch_select_delay)
         run_testcase("BGEU - 0");
 
@@ -127,7 +127,7 @@ module branch_control_unit_tb;
         DATA1 = 32'hffffffff;
         DATA2 = 32'h00000001;
         SELECT = 4'b1111;
-        EXP_PC_MUX_OUT = 1'b1;
+        EXP_BJ_SIG = 1'b1;
         #(branch_select_delay)
         run_testcase("BGEU - 1");
         
@@ -140,16 +140,16 @@ module branch_control_unit_tb;
     end
     
     // Helper task to run a single testcase
-    task run_testcase (input reg[127:0] immediate_type);
+    task run_testcase (input reg[127:0] instruction_type);
     begin
         testcase_count = testcase_count + 1;
 
-        // Display immediate type being tested
-        $display("\033[1m[ %0s ]\033[0m", immediate_type);
+        // Display instruction type being tested
+        $display("\033[1m[ %0s ]\033[0m", instruction_type);
 
         // Check if testcase passed
-        if (PROD_PC_MUX_OUT !== EXP_PC_MUX_OUT)
-            $display("\t\033[1;31m[FAILED]\033[0m PROD_PC_MUX_OUT = %x, EXP_PC_MUX_OUT = %x", PROD_PC_MUX_OUT, EXP_PC_MUX_OUT);
+        if (PROD_BJ_SIG !== EXP_BJ_SIG)
+            $display("\t\033[1;31m[FAILED]\033[0m PROD_BJ_SIG = %x, EXP_BJ_SIG = %x", PROD_BJ_SIG, EXP_BJ_SIG);
         else 
             pass_count = pass_count + 1;
     end

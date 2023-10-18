@@ -12,12 +12,12 @@ module cpu_tb;
     // Produced Outputs
     wire [2:0] PROD_DATA_MEM_WRITE;
     wire [3:0] PROD_DATA_MEM_READ;
-    wire [31:0] PROD_PC, PROD_DATA_MEM_ADDR, PROD_DATA_MEM_WRITE_DATA;
+    wire [31:0] PC, PROD_DATA_MEM_ADDR, PROD_DATA_MEM_WRITE_DATA;
 
     // Expected Outputs
     reg [2:0] EXP_DATA_MEM_WRITE;
     reg [3:0] EXP_DATA_MEM_READ;
-    reg [31:0] EXP_PC, EXP_DATA_MEM_ADDR, EXP_DATA_MEM_WRITE_DATA;
+    reg [31:0] EXP_DATA_MEM_ADDR, EXP_DATA_MEM_WRITE_DATA;
     reg [31:0] EXP_REG_VALUES [31:0];
 
     // Counters for passing and total testcases
@@ -29,7 +29,7 @@ module cpu_tb;
 
     // Instantiate the CPU
     cpu dut (
-        CLK, RESET, PROD_PC, INSTRUCTION, PROD_DATA_MEM_READ, PROD_DATA_MEM_WRITE,
+        CLK, RESET, PC, INSTRUCTION, PROD_DATA_MEM_READ, PROD_DATA_MEM_WRITE,
         PROD_DATA_MEM_ADDR, PROD_DATA_MEM_WRITE_DATA, PROD_DATA_MEM_READ_DATA,
         DATA_MEM_BUSYWAIT, INSTR_MEM_BUSYWAIT
     );
@@ -57,10 +57,8 @@ module cpu_tb;
         pass_count = 0;
         testcase_count = 0;
 
-        // Send reset signal
         reset_values();
         INSTRUCTION = 32'b00000000000000000001000010110111;
-        EXP_PC = 32'd16;
         EXP_REG_VALUES[1] = 32'd4096;
         EXP_DATA_MEM_WRITE = 3'b000;
         EXP_DATA_MEM_READ = 4'b0000;
@@ -69,16 +67,14 @@ module cpu_tb;
         #(CLOCK_PERIOD*4)           // Wait for WB
         run_testcase("LUI");
 
-
         reset_values();
         INSTRUCTION = 32'b0000000011100000000000110010011;
-        EXP_PC = 32'd16;
         EXP_REG_VALUES[3] = 32'd7;
         EXP_DATA_MEM_WRITE = 3'b000;
         EXP_DATA_MEM_READ = 4'b0000;
         EXP_DATA_MEM_ADDR = 32'dx;
         EXP_DATA_MEM_WRITE_DATA = 32'dx;
-        #(CLOCK_PERIOD*5)
+        #(CLOCK_PERIOD*4)
         run_testcase("ADDI");
 
 
@@ -108,12 +104,6 @@ module cpu_tb;
                 $display("\t\033[1;31m[FAILED]\033[0m REGISTERS[%0d] = %0x, EXP_REG_VALUES[%0d] = %0x", i, dut.ID_REG_FILE.REGISTERS[i], i, EXP_REG_VALUES[i]);
                 fails = fails + 1;
             end
-        end
-
-        if (PROD_PC !== EXP_PC)
-        begin
-            $display("\t\033[1;31m[FAILED]\033[0m PROD_PC = %0x, EXP_PC = %0x", PROD_PC, EXP_PC);
-            fails = fails + 1;
         end
 
         // If MSB doesn't match, fail

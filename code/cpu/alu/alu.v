@@ -27,6 +27,9 @@ module alu (DATA1, DATA2, RESULT, SELECT);
                 INTER_REMU,
                 INTER_FWD;
 
+                /*INTER_FCVTSW,
+                INTER_FCVTSWU */
+
     // 64-bit intermediates to hold results of multiplications
     wire [63:0] INTER_MULH64,
                 INTER_MULHU64;
@@ -65,7 +68,7 @@ module alu (DATA1, DATA2, RESULT, SELECT);
     assign #5 INTER_MULH64 = $signed(DATA1) * $signed(DATA2);
     assign INTER_MULH = INTER_MULH64[63:32];
 
-    // MULHSU returns the upper 32 bits of signed x unsigned multiplication
+    // MULHSU returns the upper 32 bits of signed x unsigned multiplication 
     always @ (*)
     begin
         #5
