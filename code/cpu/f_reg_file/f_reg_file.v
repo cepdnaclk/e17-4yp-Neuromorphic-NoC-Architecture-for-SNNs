@@ -1,11 +1,11 @@
 `timescale 1ns/100ps
 
-module reg_file (DATA_IN, DATA_OUT1, DATA_OUT2, IN_ADDRESS, OUT1_ADDRESS, OUT2_ADDRESS, WRITE_EN, CLK, RESET);
+module f_reg_file (DATA_IN, DATA_OUT1, DATA_OUT2, DATA_OUT3, IN_ADDRESS, OUT1_ADDRESS, OUT2_ADDRESS, OUT3_ADDRESS, WRITE_EN, CLK, RESET);
     
-    input [31:0]  DATA_IN;                                  // 32-bit data input
-    input [4:0] IN_ADDRESS, OUT1_ADDRESS, OUT2_ADDRESS;     // Address lines
-    input WRITE_EN, CLK, RESET;                             // Control signals
-    output [31:0] DATA_OUT1, DATA_OUT2;                 // 32-bit data outputs
+    input [31:0]  DATA_IN;                                                // 32-bit data input
+    input [4:0] IN_ADDRESS, OUT1_ADDRESS, OUT2_ADDRESS, OUT3_ADDRESS;     // Address lines
+    input WRITE_EN, CLK, RESET;                                     // Control signals
+    output [31:0] DATA_OUT1, DATA_OUT2, DATA_OUT3;                 // 32-bit data outputs
 
     // 32-bit x 32 register file
     reg [31:0] REGISTERS [31:0]; 
@@ -13,6 +13,7 @@ module reg_file (DATA_IN, DATA_OUT1, DATA_OUT2, IN_ADDRESS, OUT1_ADDRESS, OUT2_A
     /*** Read asynchronously ***/
     assign #2 DATA_OUT1 = REGISTERS[OUT1_ADDRESS];
     assign #2 DATA_OUT2 = REGISTERS[OUT2_ADDRESS];
+    assign #2 DATA_OUT3 = REGISTERS[OUT3_ADDRESS];
 
     /*** Write on negative clock edge ***/
     integer i;
@@ -27,7 +28,7 @@ module reg_file (DATA_IN, DATA_OUT1, DATA_OUT2, IN_ADDRESS, OUT1_ADDRESS, OUT2_A
         end
         else
         begin
-            if (WRITE_EN == 1'b1 && IN_ADDRESS != 0)     // x0 must always be zero
+            if (WRITE_EN == 1'b1)
             begin
                 REGISTERS[IN_ADDRESS] <= #2 DATA_IN;    
             end

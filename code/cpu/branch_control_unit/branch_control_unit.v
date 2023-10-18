@@ -1,10 +1,10 @@
 `timescale 1ns/100ps
 
-module branch_control_unit (DATA1, DATA2, SELECT, PC_MUX_OUT);
+module branch_control_unit (DATA1, DATA2, SELECT, BJ_SIG);
 
     input [31:0] DATA1, DATA2;
     input [3:0] SELECT;
-    output reg PC_MUX_OUT;
+    output reg BJ_SIG;
 
     // Wires to hold intermediate calculations
     wire BEQ, BNE, BLT, BGE, BLTU, BGEU;
@@ -25,32 +25,32 @@ module branch_control_unit (DATA1, DATA2, SELECT, PC_MUX_OUT);
             case (SELECT[2:0])
                 // for JAL and JALR
                 3'b010:
-                    PC_MUX_OUT = 1'b1; 
+                    BJ_SIG = 1'b1; 
                 // for BEQ
                 3'b000:
-                    PC_MUX_OUT = BEQ;
+                    BJ_SIG = BEQ;
                 // for BNE
                 3'b001:
-                    PC_MUX_OUT = BNE;
+                    BJ_SIG = BNE;
                 // for BLT
                 3'b100:
-                    PC_MUX_OUT = BLT;
+                    BJ_SIG = BLT;
                 // for BGE
                 3'b101:
-                    PC_MUX_OUT = BGE;
+                    BJ_SIG = BGE;
                 // for BLTU
                 3'b110:
-                    PC_MUX_OUT = BLTU; 
+                    BJ_SIG = BLTU; 
                 // for BGEU
                 3'b111:
-                    PC_MUX_OUT = BGEU; 
+                    BJ_SIG = BGEU; 
                 default:
-                    PC_MUX_OUT = 1'b0;
+                    BJ_SIG = 1'b0;
             endcase
         end
         else
         begin
-            PC_MUX_OUT = 1'b0;
+            BJ_SIG = 1'b0;
         end
     end
     
