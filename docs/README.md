@@ -92,13 +92,113 @@ the two extremes wherein the model is complex enough to
 sufficiently emulate the behaviour of natural neurons while
 also being computationally effective.
 
+### B. Neuromorphic Architecture Implementations
+
+Given that the development of neuromorphic architectures
+is an active area of research, there have been several proposed implementations with the intention of simulating and accelerating SNNs.The most prominent architecture is a massive multi-core processor network purpose-built for accelerating SNN workloads named SpiNNaker developed by the Advanced Processor Technologies Research Group (APT) at the Department of Computer Science, University of Manchester. The SpiNNaker system utilises a network of 57600 nodes with each node consisting of 18 ARM968 cores and it is being used as the neuromorphic computing platform for the Human Brain Project. It is implemented with a globally asynchronous locally synchronous (GALS) routing mechanism to allow for energy-efficient and scalable inter-node communications due to the sheer number of nodes. While SpiNNaker boasts impressively high performance and parallelism, it is an extremely expensive,
+large-scale project requiring 100 kW of power from a 240 V
+supply and an air-conditioned environment.
+DYNAP (Dynamic Neuromorphic Asynchronous Processor), by Moradi, S. et al., is yet another neuromorphic proces-
+sor architecture that boasts high scalability with heterogeneous memory structures for minimising memory utilisation. This design focuses primarily on the interconnect between the processor nodes and proposes a hierarchical routing mechanism for making the event-based communication much more efficient. DYNAPs have been demonstrated to achieve high scalability with minimal memory requirements in simulating a three-layer convolutional neural network.
+Further, the OpenSpike project by Modaresi, F. et
+al. and research by Zhang, J. et al. demonstrate the
+utilisation of Application-Specific Integrated Circuits (ASICs) in developing neuromorphic architectures. Both implementations adopt the leaky integrate-and-fire neuron model at the hardware level along with a network implementation to provide the interconnect between the hardware neurons through event-driven updates. Such ASIC implementations of artificial
+neurons offer excellent performance but lack the flexibility
+in programming and configuration offered by higher-level
+architectures.
+
+Another approach to neuromorphic architectures is demon-
+strated by Urgese, G. et al. in the ODIN coprocessor for
+accelerating SNN workloads in Internet-of-Things (IoT) applications. The designed architecture consists of a reconfigurable neuromorphic coprocessor which interfaces with a RISC-V based System on Chip (SoC) via the Serial Peripheral Interface (SPI), allowing the RISC-V core to configure and offload SNN tasks to the ODIN coprocessor. ODIN supports the leaky integrate-and-fire model and a custom Izhikevich inspired neuron model.
+
+The POETS (Partial Ordered Event Triggered Systems)
+architecture by Shahsavari, M. et al. [15] is another ongoing research project which focuses on building a customizable hardware platform for event-driven parallel programming. The POETS system is a large parallel processing cluster where the SNN is configured using a graph schema and it is capable of simulating both the leaky integrate-and-fire neuron model as well as the Izhikevich model. Part of the POETS project is the
+development of a hyperthreaded RISC-V core named Tinsel
+, by Naylor, M. et al., specifically designed to work in
+tandem with the POETS system to reduce latency.
+Although numerous such neuromorphic architectures exist,
+there is a lack of designs that exploit the programming flexibility and platform maturity of existing architectures. Granted that highly-specialised hardware as presented in existing designs deliver very high performance, the authors of this paper believe that a neuromorphic architecture based on the RISC-
+V architecture, which offers greater flexibility, will yield a valuable compromise.
+
+
 ## Methodology
+
+- Build RISC-V Core
+- Add Custom Hardware
+- Implement NoC
+- Verification 
+- Simulate an SNN
+- Evaluate Performance
+
+### The Core
+
+
+### The NoC
+
+![NoC](./images/NOC/NoC-NoC.drawio.png "NoC")
+
+
+
+#### Network Interface
+![NI](./images/NOC/NoC-temp_NI.drawio.png "Network Interface")
+
+#### Packet Processing
+![PKT_PROC](./images/NOC/NoC-temp-pkt_proc.drawio.png "Packet Processing")
+
+#### Input Module
+![IM](./images/NOC/NoC-temp-input_module.drawio.png "Input Module")
+
+#### Output Module
+![OM](./images/NOC/NoC-temp-output_module.drawio.png "Output_Module")
+
+#### Router
+
+![Router](./images/NOC/NoC-temp-router.drawio.png "Router")
+![CB](./images/NOC/NoC-temp-router_crossbar.drawio.png "CrossBar ")
+
+### Custom Hardware - Neuron Banks
+
+### Final Architecture
+
+### Verification 
+
+
+
+#### Software Simulation 
+
+
+
+#### Hardware Testing 
+
+
+
+
+
 
 ## Experiment Setup and Implementation
 
+- Sample SNN with four neurons
+- Simulated on FPGA hardware
+- Three different configurations used (Single Core, Two Core NoC, Two Core NoC + Neuron Banks)
+- Measured clock cycles taken to execute 1s of simulation (1ms timesteps)
+
+### Experiment I - Single Core
+![EX1](./images/NOC/NoC-temp-1.drawio.png "Experiment I")
+
+### Experiment II - 2 Core NoC 
+![EX2](./images/NOC/NoC-temp.drawio.png "Experiment II")
+
+### Experiment III - 2 Core Noc + Neuron Banks
+![EX3](./images/NOC/NoC-temp-2.drawio.png "Experiment III")
+
+
 ## Results and Analysis
 
+
+
 ## Conclusion
+
+
 
 ## Publications
 [//]: # "Note: Uncomment each once you uploaded the files to the repository"
